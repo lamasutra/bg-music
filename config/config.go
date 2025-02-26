@@ -6,17 +6,15 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+
+	"bigbangit.com/event-music/model"
 )
 
 type Config struct {
-	Volume int              `json:"volume"`
-	Path   string           `json:"path"`
-	Events map[string]Event `json:"events"`
-}
-
-type Event struct {
-	Volume int    `json:"volume"`
-	Songs  []Song `json:"songs"`
+	Volume int                    `json:"volume"`
+	Path   string                 `json:"path"`
+	Events map[string]model.Event `json:"events"`
+	States map[string]model.State `json:"states"`
 }
 
 type Song struct {

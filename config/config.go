@@ -7,20 +7,14 @@ import (
 	"math/rand"
 	"os"
 
-	"bigbangit.com/event-music/model"
+	"github.com/bg-music/model"
 )
 
 type Config struct {
-	Volume int                    `json:"volume"`
+	Volume uint8                  `json:"volume"`
 	Path   string                 `json:"path"`
 	Events map[string]model.Event `json:"events"`
 	States map[string]model.State `json:"states"`
-}
-
-type Song struct {
-	Path      string `json:"path"`
-	Skip      int    `json:"skip"`
-	EndBefore int    `json:"endBefore"`
 }
 
 func Read(path string) (*Config, error) {
@@ -42,32 +36,32 @@ func Read(path string) (*Config, error) {
 	return &config, nil
 }
 
-func (c Config) GetEvent(event string) (*Event, error) {
+func (c Config) GetEvent(event string) (*model.Event, error) {
 	ev, ok := c.Events[event]
 	if ok {
 		return &ev, nil
 	} else {
-		return &Event{}, errors.New("event not found")
+		return &model.Event{}, errors.New("event not found")
 	}
 }
 
-func (c Config) GetEventSong(event string, index uint8) (*Song, error) {
+func (c Config) GetEventSong(event string, index uint8) (*model.Music, error) {
 	ev, err := c.GetEvent(event)
 	if err != nil {
-		return &Song{}, err
+		return &model.Music{}, err
 	}
 
-	song := ev.Songs[index]
+	song := ev.Music[index]
 	return &song, nil
 }
 
-func (c Config) GetRandomSong(event string) (*Song, error) {
+func (c Config) GetRandomSong(event string) (*model.Music, error) {
 	ev, err := c.GetEvent(event)
 	if err != nil {
-		return &Song{}, err
+		return &model.Music{}, err
 	}
 	var index uint8
-	length := len(ev.Songs)
+	length := len(ev.Music)
 	if length > 1 {
 		index = uint8(rand.Intn(int(length - 1)))
 	} else {

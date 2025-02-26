@@ -1,0 +1,13 @@
+{
+    "nickname": "-Tygri- xbladecz",
+    "colors": {
+        "enemy": {
+            "air": ["#f00c00", "#fa0c00"],
+            "ground": ["#fa0c00"]
+        },
+        "friendly": {
+            "air": ["#174dff","#39d921"],
+            "ground": ["#043fff"]
+        }
+    }
+}

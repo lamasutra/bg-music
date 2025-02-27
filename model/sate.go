@@ -1,6 +1,7 @@
 package model
 
 type State struct {
-	Event
+	Volume *int     `json:"volume"`
+	Music  []Music  `json:"music"`
 	States []string `json:"states"`
 }

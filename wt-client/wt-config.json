@@ -1,5 +1,7 @@
 {
     "nickname": "-Tygri- xbladecz",
+    "host": "http://localhost:8111/",
+    "bg_player_type": "pipe",
     "colors": {
         "enemy": {
             "air": ["#f00c00", "#fa0c00"],
@@ -9,5 +11,217 @@
             "air": ["#174dff","#39d921"],
             "ground": ["#043fff"]
         }
+    },
+    "themes": {
+        "default": {
+            "events": {
+                "airKill": {
+                    "volume": 100,
+                    "sfx": [
+                        {"path": "sfx/tfx/air-kill.mp3"}
+                    ]
+                },
+                "groundKill": {
+                    "volume": 100,
+                    "sfx": [
+                        {"path": "sfx/tfx/ground-kill.mp3"}
+                    ]
+                }
+            },
+            "states": {
+                "idle": {
+                    "volume": 50,
+                    "states": ["start"],
+                    "music": [
+                        {
+                            "path": "crusader/1/08 Track 8.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "crusader/2/04 Track 4.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "crusader/1/04 Track4.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "start": {
+                    "volume": 100,
+                    "states": ["load"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/01-introduction.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "load": {
+                    "volume": 80,
+                    "states": ["begin"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/03-intermission.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "landed": {
+                    "volume": 100,
+                    "states": ["begin"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/02-enrol.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "begin": {
+                    "volume": 80,
+                    "states": ["landed", "clear", "death", "success", "failure"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/04-columbia.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/05-libya.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/06-somalia.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/07-yugoslavia.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/08-ocean.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "danger": {
+                    "volume": 80,
+                    "states": ["landed", "clear", "death", "success", "failure"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/09-defence-suppression.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/10-anti-armour.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/11-maritime.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/12-air-superiority.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/14-close-air-support.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "battle": {
+                    "volume": 100,
+                    "states": ["landed", "danger", "death", "success", "failure"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/16-battle.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/17-sea-battle.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/18-land-battle.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "clear": {
+                    "volume": 100,
+                    "states": ["landed", "death", "danger", "success", "failure"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/13-interdict.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/15-intercept.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "death": {
+                    "volume": 80,
+                    "states": ["begin", "success", "failure"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/27-death.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "success": {
+                    "volume": 80,
+                    "states": ["start"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/28-successful.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "failure": {
+                    "volume": 80,
+                    "states": ["start"],
+                    "music": [
+                        {
+                            "path": "tfx-adlib/26-unsuccessful.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "maps": {
+
+    },
+    "vehicles": {
+
     }
 }

@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"bigbangit.com/wt-client/config"
+	"github.com/lamasutra/bg-music/wt-client/clientConfig"
 )
 
 type MapObj []Entity
@@ -79,11 +79,11 @@ func (mapObj *MapObj) GetAircrafts() *[]Entity {
 	return mapObj.getEntitiesByType("aircraft")
 }
 
-func (mapObj *MapObj) GetEnemyAircrafts(conf *config.Config) *[]Entity {
+func (mapObj *MapObj) GetEnemyAircrafts(conf *clientConfig.Config) *[]Entity {
 	return mapObj.getEntitiesByTypeAndColors("aircraft", &conf.Colors.Enemy.Air)
 }
 
-func (mapObj *MapObj) GetEnemyGroundUnits(conf *config.Config) *[]Entity {
+func (mapObj *MapObj) GetEnemyGroundUnits(conf *clientConfig.Config) *[]Entity {
 	return mapObj.getEntitiesByTypeAndColors("ground_model", &conf.Colors.Enemy.Ground)
 }
 

@@ -1,10 +1,12 @@
 {
-    "volume": 50,
+    "player_type": "beep",
+    "server_type": "pipe",
+    "volume": 0,
     "path": "music",
-    "events": {
+    "states": {
         "idle": {
             "volume": 50,
-            "songs": [
+            "music": [
                 {
                     "path": "crusader/1/08 Track 8.mp3",
                     "skip": 0,
@@ -21,133 +23,13 @@
                     "endBefore": 0
                 }
             ]
-        },
-        "start": {
-            "volume": 100,
-            "songs": [
-                {
-                    "path": "tfx/01 Introduction.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "load": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/03 Intermission.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "begin": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/04 Columbia.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/05 Libya.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/06 Somalia.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/07 Yugo.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "clear": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/13 Interdict.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/15 Intercept.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "battle": {
-            "volume": 100,
-            "songs": [
-                {
-                    "path": "tfx/16 Battle.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/17 Sea Battle.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/18 Land Battle.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "danger": {
-            "volume": 100,
-            "songs": [
-                {
-                    "path": "tfx/19 Jingle 1.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "tfx/20 Jingle 1.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "death": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/27 Death.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }, {
-                    "path": "tfx/25 Eject.flac"
-                }
-            ]
-        },
-        "success": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/28 Successful Flying.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        },
-        "failure": {
-            "volume": 80,
-            "songs": [
-                {
-                    "path": "tfx/26 Unsuccessful Flying.flac",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
+        }
+    },
+    "events": {
+        "test": {
+            "sfx": [{
+                "path": "demo-sfx.mp3"
+            }]
         }
     }
 }

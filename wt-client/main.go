@@ -6,11 +6,10 @@ import (
 	"os"
 	"time"
 
-	"bigbangit.com/wt-client/client"
-	"bigbangit.com/wt-client/config"
+	"github.com/lamasutra/bg-music/wt-client/client"
+	"github.com/lamasutra/bg-music/wt-client/clientConfig"
+	"github.com/lamasutra/bg-music/wt-client/player"
 )
-
-const defaultHost = "http://localhost:8111/"
 
 func writeToFile(value string, file *os.File) {
 	_, err := file.WriteString(value + "\n")
@@ -20,7 +19,26 @@ func writeToFile(value string, file *os.File) {
 }
 
 func main() {
-	var conf config.Config
+	var conf clientConfig.Config
+	err := conf.Read("wt-config.json")
+	if err != nil {
+		fmt.Println("Cannot read wt-config.json")
+		return
+	}
+
+	fmt.Println("your nickname", conf.Nickname)
+
+	player := player.CreatePlayer(conf.BgPlayerType, &conf)
+
+	defer player.Close()
+	for {
+		time.Sleep(time.Second)
+		fmt.Println("tick")
+	}
+}
+
+func mainBak() {
+	var CurrentConfig clientConfig.Config
 	var state client.State
 	var indicators client.Indicators
 	var mapInfo client.MapInfo
@@ -29,12 +47,15 @@ func main() {
 	var lastEvt, lastDmg uint64
 	var err error
 
-	err = conf.Read("wt-config.json")
+	err = CurrentConfig.Read("wt-config.json")
 	if err != nil {
 		fmt.Println("Cannot read wt-config.json")
 	}
 
-	fmt.Println("your nickname", conf.Nickname)
+	fmt.Println("your nickname", CurrentConfig.Nickname)
+
+	// fmtJson, _ := json.MarshalIndent(CurrentConfig, "", "  ")
+	// fmt.Println(string(fmtJson))
 
 	sleepTime := time.Millisecond * 500
 	sleepOffline := time.Millisecond * 1000
@@ -76,11 +97,11 @@ func main() {
 	writeToFile(currentState, pipeFile)
 
 	for {
-		err = state.Load(defaultHost)
+		err = state.Load(CurrentConfig.Host)
 		if err != nil {
 			fmt.Println("state error: ", err, state)
 			time.Sleep(sleepOffline)
-			err = state.Load(defaultHost)
+			err = state.Load(CurrentConfig.Host)
 			if err != nil {
 				if currentState != "idle" {
 					newState = "idle"
@@ -92,13 +113,13 @@ func main() {
 			// } else {
 			// fmt.Println(state)
 		}
-		err = indicators.Load(defaultHost)
+		err = indicators.Load(CurrentConfig.Host)
 		if err != nil {
 			fmt.Println("indicators error: ", indicators)
 			// } else {
 			// fmt.Println(indicators)
 		}
-		err = mapInfo.Load(defaultHost)
+		err = mapInfo.Load(CurrentConfig.Host)
 		if err != nil {
 			fmt.Println("mapInfo error: ", mapInfo)
 			// } else {
@@ -106,23 +127,23 @@ func main() {
 		}
 
 		if mapInfo.IsValid() {
-			err = mapObj.Load(defaultHost)
+			err = mapObj.Load(CurrentConfig.Host)
 			if err != nil {
 				fmt.Println("mapObj error: ", mapObj)
 				// } else {
 				// fmt.Println(mapObj)
 			}
-			err = hudMsg.Load(defaultHost, lastEvt, lastDmg)
+			err = hudMsg.Load(CurrentConfig.Host, lastEvt, lastDmg)
 			if err != nil {
 				fmt.Println("hudMsg error: ", mapObj)
 			}
 
 			player = mapObj.GetPlayerEntity()
 			// aircrafts = mapObj.GetAircrafts()
-			enemyAircrafts = mapObj.GetEnemyAircrafts(&conf)
-			enemyGroundUnits = mapObj.GetEnemyGroundUnits(&conf)
-			isShotDown = hudMsg.IsShotDown(conf.Nickname)
-			hasCrashed = hudMsg.HasCrashed(conf.Nickname)
+			enemyAircrafts = mapObj.GetEnemyAircrafts(&CurrentConfig)
+			enemyGroundUnits = mapObj.GetEnemyGroundUnits(&CurrentConfig)
+			isShotDown = hudMsg.IsShotDown(CurrentConfig.Nickname)
+			hasCrashed = hudMsg.HasCrashed(CurrentConfig.Nickname)
 			isMissionEnded = hudMsg.IsMissionEnded()
 			lastDamage = hudMsg.GetLastDmg()
 			if lastDamage != nil {

@@ -1,4 +1,4 @@
-module github.com/bg-music
+module github.com/lamasutra/bg-music
 
 go 1.22.2
 

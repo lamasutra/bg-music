@@ -2,7 +2,7 @@ package client
 
 import "hash/crc32"
 
-func Identify(host string) (uint32, error) {
+func MapIdentity(host string) (uint32, error) {
 	img, err := GetDataFromUrl(host + "map.img?gen=3")
 	if err != nil {
 		return 0, err

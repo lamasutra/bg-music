@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"math"
 	"strings"
-
-	"github.com/lamasutra/bg-music/wt-client/clientConfig"
 )
 
 type MapObj []Entity
@@ -79,12 +77,12 @@ func (mapObj *MapObj) GetAircrafts() *[]Entity {
 	return mapObj.getEntitiesByType("aircraft")
 }
 
-func (mapObj *MapObj) GetEnemyAircrafts(conf *clientConfig.Config) *[]Entity {
-	return mapObj.getEntitiesByTypeAndColors("aircraft", &conf.Colors.Enemy.Air)
+func (mapObj *MapObj) GetEnemyAircrafts(colors *[]string) *[]Entity {
+	return mapObj.getEntitiesByTypeAndColors("aircraft", colors)
 }
 
-func (mapObj *MapObj) GetEnemyGroundUnits(conf *clientConfig.Config) *[]Entity {
-	return mapObj.getEntitiesByTypeAndColors("ground_model", &conf.Colors.Enemy.Ground)
+func (mapObj *MapObj) GetEnemyGroundUnits(colors *[]string) *[]Entity {
+	return mapObj.getEntitiesByTypeAndColors("ground_model", colors)
 }
 
 func (mapObj *MapObj) GetTanks() *[]Entity {

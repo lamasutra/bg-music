@@ -40,19 +40,14 @@ type Music struct {
 	EndBefore int    `json:"endBefore"`
 }
 
-type State struct {
-	Volume *int     `json:"volume"`
-	Music  []Music  `json:"music"`
-	States []string `json:"states"`
-}
-
 type Config struct {
-	Nickname     string             `json:"nickname"`
-	Host         string             `json:"host"`
-	BgPlayerType string             `json:"bg_player_type"`
-	Themes       map[string]Theme   `json:"themes"`
-	Maps         map[string]Map     `json:"maps"`
-	Vehicles     map[string]Vehicle `json:"vehicles"`
+	Nickname     string               `json:"nickname"`
+	Host         string               `json:"host"`
+	BgPlayerType string               `json:"bg_player_type"`
+	Themes       map[string]Theme     `json:"themes"`
+	Maps         map[string]Map       `json:"maps"`
+	Vehicles     map[string]Vehicle   `json:"vehicles"`
+	StateRules   map[string]StateRule `json:"state_rules"`
 	Colors       struct {
 		Enemy struct {
 			Air    []string `json:"air"`

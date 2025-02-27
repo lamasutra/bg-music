@@ -35,6 +35,18 @@ func (p *PipePlayer) SendEventStates(ec *clientConfig.EventStates) error {
 	return nil
 }
 
+func (p *PipePlayer) SendState(state string) error {
+	_, err := p.statePipe.WriteString(state + "\n")
+
+	return err
+}
+
+func (p *PipePlayer) TriggerEvent(event string) error {
+	_, err := p.eventPipe.WriteString(event + "\n")
+
+	return err
+}
+
 func (p *PipePlayer) Init(c *clientConfig.Config) {
 	var err error
 	p.controlPipe, err = os.OpenFile("../control.pipe", os.O_WRONLY, 0644)

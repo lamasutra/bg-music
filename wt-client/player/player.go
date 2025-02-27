@@ -5,6 +5,8 @@ import "github.com/lamasutra/bg-music/wt-client/clientConfig"
 type BgPlayer interface {
 	Init(*clientConfig.Config)
 	SendEventStates(*clientConfig.EventStates) error
+	TriggerEvent(event string) error
+	SendState(event string) error
 	Close()
 }
 

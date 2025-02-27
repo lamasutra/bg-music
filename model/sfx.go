@@ -1,5 +1,6 @@
 package model
 
 type Sfx struct {
-	Path string `json:"path"`
+	Volume *int   `json:"volume"`
+	Path   string `json:"path"`
 }

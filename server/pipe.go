@@ -95,13 +95,13 @@ func handlePipeFile(ch chan string, filename string, sleepTime time.Duration) {
 
 // controls
 
-func (p *PipeServer) loadConfig(data *LoadConfigData) {
-	fmt.Println("loading config:", data)
+func (p *PipeServer) loadConfig(data *LoadData) {
+	// fmt.Println("loading config:", data)
 	p.state.config.Events = data.Events
 	p.state.config.States = data.States
 
-	str, _ := json.MarshalIndent(p.state.config, "", "  ")
-	fmt.Println("loaded:", string(str))
+	// str, _ := json.MarshalIndent(p.state.config, "", "  ")
+	// fmt.Println("loaded:", string(str))
 }
 
 func (p *PipeServer) handleControl(control string) error {
@@ -111,21 +111,17 @@ func (p *PipeServer) handleControl(control string) error {
 		fmt.Println("error:", err, req)
 		return err
 	}
-	if req == nil {
-		fmt.Println("invalid request")
-		return errors.New("invalid request")
-	}
 	fmt.Println("Received control:", req.Action)
 
 	switch req.Action {
 	case "load":
-		loadData, ok := req.Data.(LoadConfigData)
-		if !ok {
-			str, _ := json.MarshalIndent(req.Data, "", "  ")
-			fmt.Println("invalid data in request", string(str))
-			return errors.New("invalid data in request")
+		loadRequest := &LoadRequest{}
+		err := json.Unmarshal([]byte(control), loadRequest)
+		if err != nil {
+			fmt.Println("data", err)
+			return err
 		}
-		p.loadConfig(&loadData)
+		p.loadConfig(&loadRequest.Data)
 	default:
 		return errors.New("unknown action")
 	}

@@ -31,7 +31,6 @@
             "states": {
                 "idle": {
                     "volume": 50,
-                    "states": ["start"],
                     "music": [
                         {
                             "path": "crusader/1/08 Track 8.mp3",
@@ -52,7 +51,6 @@
                 },
                 "start": {
                     "volume": 100,
-                    "states": ["load"],
                     "music": [
                         {
                             "path": "tfx-adlib/01-introduction.mp3",
@@ -63,7 +61,6 @@
                 },
                 "load": {
                     "volume": 80,
-                    "states": ["begin"],
                     "music": [
                         {
                             "path": "tfx-adlib/03-intermission.mp3",
@@ -74,7 +71,6 @@
                 },
                 "landed": {
                     "volume": 100,
-                    "states": ["begin"],
                     "music": [
                         {
                             "path": "tfx-adlib/02-enrol.mp3",
@@ -85,7 +81,6 @@
                 },
                 "begin": {
                     "volume": 80,
-                    "states": ["landed", "clear", "death", "success", "failure"],
                     "music": [
                         {
                             "path": "tfx-adlib/04-columbia.mp3",
@@ -114,17 +109,11 @@
                         }
                     ]
                 },
-                "danger": {
+                "danger_air": {
                     "volume": 80,
-                    "states": ["landed", "clear", "death", "success", "failure"],
                     "music": [
                         {
                             "path": "tfx-adlib/09-defence-suppression.mp3",
-                            "skip": 0,
-                            "endBefore": 0
-                        },
-                        {
-                            "path": "tfx-adlib/10-anti-armour.mp3",
                             "skip": 0,
                             "endBefore": 0
                         },
@@ -137,6 +126,21 @@
                             "path": "tfx-adlib/12-air-superiority.mp3",
                             "skip": 0,
                             "endBefore": 0
+                        }
+                    ]
+                },
+                "danger_ground": {
+                    "volume": 80,
+                    "music": [
+                        {
+                            "path": "tfx-adlib/10-anti-armour.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        },
+                        {
+                            "path": "tfx-adlib/11-maritime.mp3",
+                            "skip": 0,
+                            "endBefore": 0
                         },
                         {
                             "path": "tfx-adlib/14-close-air-support.mp3",
@@ -145,15 +149,19 @@
                         }
                     ]
                 },
-                "battle": {
+                "battle_air": {
                     "volume": 100,
-                    "states": ["landed", "danger", "death", "success", "failure"],
                     "music": [
                         {
                             "path": "tfx-adlib/16-battle.mp3",
                             "skip": 0,
                             "endBefore": 0
-                        },
+                        }
+                    ]
+                },
+                "battle_ground": {
+                    "volume": 100,
+                    "music": [
                         {
                             "path": "tfx-adlib/17-sea-battle.mp3",
                             "skip": 0,
@@ -168,7 +176,6 @@
                 },
                 "clear": {
                     "volume": 100,
-                    "states": ["landed", "death", "danger", "success", "failure"],
                     "music": [
                         {
                             "path": "tfx-adlib/13-interdict.mp3",
@@ -184,7 +191,6 @@
                 },
                 "death": {
                     "volume": 80,
-                    "states": ["begin", "success", "failure"],
                     "music": [
                         {
                             "path": "tfx-adlib/27-death.mp3",
@@ -195,7 +201,6 @@
                 },
                 "success": {
                     "volume": 80,
-                    "states": ["start"],
                     "music": [
                         {
                             "path": "tfx-adlib/28-successful.mp3",
@@ -206,7 +211,6 @@
                 },
                 "failure": {
                     "volume": 80,
-                    "states": ["start"],
                     "music": [
                         {
                             "path": "tfx-adlib/26-unsuccessful.mp3",
@@ -223,5 +227,170 @@
     },
     "vehicles": {
 
+    },
+    "state_rules": {
+        "idle": {
+            "states_bak": ["start"],
+            "states": ["start", "load", "begin", "landed", "clear", "danger_air", "danger_ground", "battle_air", "battle_ground", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": false
+            }
+        },
+        "start": {
+            "states": ["load", "idle"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": false,
+                "MissionStarted": false
+            },
+            "conditions_bool_disabled": {
+                "MissionEnded": false
+            }
+        },
+        "load": {
+            "states": ["begin"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionEnded": false
+            },
+            "conditions_bool_disabled": {
+                "MissionStarted": false
+            }
+        },
+        "landed": {
+            "states": ["begin", "start"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": true,
+                "PlayerDead": false
+            }
+        },
+        "begin": {
+            "states": ["start", "landed", "clear", "danger_air", "danger_ground", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false
+            }, 
+            "conditions_bool_disabled": {
+                "EnemyAirNear": false,
+                "EnemyAirClose": false,
+                "EnemyGroundNear": false,
+                "EnemyGroundClose": false
+            }
+        },
+        "danger_air": {
+            "states": ["landed", "clear", "battle_air", "battle_ground", "danger_ground", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false,
+                "EnemyAirNear": true,
+                "EnemyAirClose": false
+            },
+            "conditions_bool_disabled": {
+                "EnemyGroundNear": false,
+                "EnemyGroundClose": false
+            }
+        },
+        "danger_ground": {
+            "states": ["landed", "clear", "battle_air", "battle_ground", "danger_air", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false,
+                "EnemyAirNear": false,
+                "EnemyAirClose": false,
+                "EnemyGroundNear": true,
+                "EnemyGroundClose": false
+            }
+        },
+        "battle_air": {
+            "states": ["landed", "danger_air", "danger_ground", "battle_ground", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false,
+                "EnemyAirNear": true,
+                "EnemyAirClose": true
+            },
+            "conditions_bool_disabled": {
+                "EnemyGroundNear": false,
+                "EnemyGroundClose": false
+            }
+        },
+        "battle_ground": {
+            "states": ["landed", "danger_air", "danger_ground", "battle_air", "death", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false,
+                "EnemyAirNear": false,
+                "EnemyAirClose": false,
+                "EnemyGroundNear": true,
+                "EnemyGroundClose": true
+            }
+        },
+        "clear": {
+            "states": ["landed", "death", "danger_air", "danger_ground", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": false,
+                "EnemyAirNear": false,
+                "EnemyAirClose": false,
+                "EnemyGroundNear": false,
+                "EnemyGroundClose": false
+            }
+        },
+        "death": {
+            "states": ["start", "begin", "success", "failure"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MapLoaded": true,
+                "MissionStarted": true,
+                "MissionEnded": false,
+                "PlayerLanded": false,
+                "PlayerDead": true
+            }
+        },
+        "success": {
+            "states": ["start"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MissionEnded": true,
+                "PlayerDead": false
+            }
+        },
+        "failure": {
+            "states": ["start"],
+            "conditions_bool": {
+                "GameRunning": true,
+                "MissionEnded": true,
+                "PlayerDead": true
+            }
+        }
     }
 }

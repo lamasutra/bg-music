@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("your nickname", conf.Nickname)
+	// fmt.Println("your nickname", conf.Nickname)
 
 	player := player.CreatePlayer(conf.BgPlayerType, &conf)
 	stMachine := stateMachine.New("idle", &conf.StateRules)

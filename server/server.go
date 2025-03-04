@@ -9,6 +9,7 @@ import (
 )
 
 type ServerState struct {
+	state  string
 	config *config.Config
 	player player.Player
 }
@@ -54,6 +55,7 @@ func triggerEvent(event string, srv *ServerState) error {
 
 func changeState(state string, srv *ServerState) error {
 	fmt.Println("Received state:", state)
+	srv.state = state
 	st, err := srv.config.GetState(state)
 	if err != nil {
 		fmt.Println(err)
@@ -75,4 +77,16 @@ func changeState(state string, srv *ServerState) error {
 	}
 
 	return nil
+}
+
+func changeMusic(state string, srv *ServerState) error {
+	fmt.Println("changing music")
+	music, err := srv.config.GetRandomStateMusic(state)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	_, err = srv.player.PlayMusic(music, srv.config)
+
+	return err
 }

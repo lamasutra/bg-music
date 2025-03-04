@@ -230,8 +230,7 @@
     },
     "state_rules": {
         "idle": {
-            "states_bak": ["start"],
-            "states": ["start", "load", "begin", "landed", "clear", "danger_air", "danger_ground", "battle_air", "battle_ground", "death", "success", "failure"],
+            "states": ["start"],
             "conditions_bool": {
                 "GameRunning": false
             }
@@ -270,7 +269,7 @@
             }
         },
         "begin": {
-            "states": ["start", "landed", "clear", "danger_air", "danger_ground", "death", "success", "failure"],
+            "states": ["landed", "battle_air", "battle_ground", "danger_ground", "death", "success", "failure"],
             "conditions_bool": {
                 "GameRunning": true,
                 "MapLoaded": true,

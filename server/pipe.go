@@ -15,10 +15,11 @@ import (
 )
 
 type PipeServer struct {
-	state          *ServerState
-	controlChannel chan string
-	stateChannel   chan string
-	eventChannel   chan string
+	state             *ServerState
+	controlChannel    chan string
+	stateChannel      chan string
+	eventChannel      chan string
+	musicEndedChannel chan bool
 }
 
 func NewPipeServer() *PipeServer {
@@ -30,9 +31,10 @@ func (p *PipeServer) Serve(conf *config.Config) {
 	p.controlChannel = make(chan string)
 	p.stateChannel = make(chan string)
 	p.eventChannel = make(chan string)
+	p.musicEndedChannel = make(chan bool)
 	serverState := ServerState{
 		config: conf,
-		player: player.CreatePlayer(conf.PlayerType, conf.Volume),
+		player: player.CreatePlayer(conf.PlayerType, conf.Volume, &p.musicEndedChannel),
 	}
 	p.state = &serverState
 
@@ -52,6 +54,8 @@ func (p *PipeServer) Serve(conf *config.Config) {
 			changeState(state, p.state)
 		case event := <-p.eventChannel:
 			triggerEvent(event, p.state)
+		case <-*serverState.player.GetMusicEndedChan():
+			changeMusic(p.state.state, p.state)
 		default:
 			time.Sleep(sleepTime)
 		}
@@ -122,6 +126,8 @@ func (p *PipeServer) handleControl(control string) error {
 			return err
 		}
 		p.loadConfig(&loadRequest.Data)
+	case "next":
+		changeMusic(p.state.state, p.state)
 	default:
 		return errors.New("unknown action")
 	}

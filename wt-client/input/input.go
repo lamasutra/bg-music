@@ -233,7 +233,7 @@ func LoadLoop(host string, conf *clientConfig.Config, stMachine *stateMachine.St
 		for {
 			state, err := stMachine.GetNextState(inputMapBool)
 			if err != nil {
-				fmt.Println("getNextState failed", err)
+				// fmt.Println("getNextState failed", err)
 				break
 			}
 			// fmt.Println("st", state, stMachine.GetCurrentState())
@@ -247,6 +247,7 @@ func LoadLoop(host string, conf *clientConfig.Config, stMachine *stateMachine.St
 					player.SendState(newState)
 					// } else {
 					// fmt.Println("state not changed")
+					// }
 				}
 				break
 			}

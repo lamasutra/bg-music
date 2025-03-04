@@ -71,7 +71,7 @@ func checkConditions(input *types.WtInputMapBool, rule *clientConfig.StateRule) 
 	for key, val := range rule.ConditionsBool {
 		// fmt.Println("  checking", key, "for", val)
 		if (*input)[key] != val {
-			// fmt.Println("    failed at", key, "value shoud be", val, "is", (*input)[key])
+			// fmt.Println("    failed at", key, /"value shoud be", val, "is", (*input)[key])
 			matches = false
 			break
 		}

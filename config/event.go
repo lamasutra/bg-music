@@ -2,10 +2,10 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 
 	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/ui"
 )
 
 func (c *Config) GetEvent(event string) (*model.Event, error) {
@@ -36,7 +36,7 @@ func (c *Config) GetRandomEventSfx(event string) (*model.Sfx, error) {
 	length := len(ev.Sfx)
 	if length > 1 {
 		index = uint8(rand.Intn(length))
-		fmt.Println("rand:", index)
+		ui.Debug("random sfx index:", index)
 	} else {
 		index = 0
 	}

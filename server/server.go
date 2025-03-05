@@ -2,10 +2,10 @@ package server
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/lamasutra/bg-music/config"
 	"github.com/lamasutra/bg-music/player"
+	"github.com/lamasutra/bg-music/ui"
 )
 
 type ServerState struct {
@@ -29,15 +29,15 @@ func CreateServer(serverType string) (Server, error) {
 }
 
 func triggerEvent(event string, srv *ServerState) error {
-	fmt.Println("Received event:", event)
+	ui.Debug("Received event:", event)
 	et, err := srv.config.GetEvent(event)
 	if err != nil {
-		fmt.Println(err)
+		ui.Debug(err)
 		return err
 	}
 	sfx, err := srv.config.GetRandomEventSfx(event)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 	if et.Volume != nil {
@@ -46,7 +46,7 @@ func triggerEvent(event string, srv *ServerState) error {
 
 	_, err = srv.player.PlaySfx(sfx, srv.config)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 
@@ -54,16 +54,16 @@ func triggerEvent(event string, srv *ServerState) error {
 }
 
 func changeState(state string, srv *ServerState) error {
-	fmt.Println("Received state:", state)
+	ui.Debug("Received state:", state)
 	srv.state = state
 	st, err := srv.config.GetState(state)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 	if st.Volume != nil {
@@ -72,7 +72,7 @@ func changeState(state string, srv *ServerState) error {
 
 	_, err = srv.player.PlayMusic(music, srv.config)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 
@@ -80,10 +80,10 @@ func changeState(state string, srv *ServerState) error {
 }
 
 func changeMusic(state string, srv *ServerState) error {
-	fmt.Println("changing music")
+	ui.Debug("changing music")
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 		return err
 	}
 	_, err = srv.player.PlayMusic(music, srv.config)

@@ -2,10 +2,10 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 
 	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/ui"
 )
 
 func (c *Config) GetState(state string) (*model.State, error) {
@@ -36,7 +36,7 @@ func (c *Config) GetRandomStateMusic(state string) (*model.Music, error) {
 	length := len(st.Music)
 	if length > 1 {
 		index = uint8(rand.Intn(length))
-		fmt.Println("rand:", index)
+		ui.Debug("random music index:", index)
 	} else {
 		index = 0
 	}

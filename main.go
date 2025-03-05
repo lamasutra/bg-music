@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/lamasutra/bg-music/config"
 	"github.com/lamasutra/bg-music/server"
+	"github.com/lamasutra/bg-music/ui"
 )
 
 // type StateMachine struct {
@@ -14,6 +16,7 @@ import (
 
 type cmdArgs struct {
 	config *string
+	tui    *bool
 }
 
 func main() {
@@ -26,7 +29,17 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Running as", conf.PlayerType, conf.ServerType)
+	initUI(cmdArgs)
+
+	// initServer
+	for {
+		time.Sleep(time.Millisecond * 100)
+		if ui.Ready {
+			break
+		}
+	}
+
+	ui.Debug("Running as", conf.PlayerType, conf.ServerType)
 	// debug
 	// jsonPretty, _ := json.MarshalIndent(*conf, "", "  ")
 	// fmt.Println(string(jsonPretty))
@@ -41,9 +54,18 @@ func main() {
 	server.Serve(conf)
 }
 
+func initUI(args *cmdArgs) {
+	uiType := "cli"
+	if *args.tui {
+		uiType = "tui"
+	}
+	ui.CreateUI(uiType)
+}
+
 func registerFlags() *cmdArgs {
 	var args cmdArgs
 	args.config = flag.String("config", "config.json", "Config file path")
+	args.tui = flag.Bool("tui", false, "show tui")
 
 	// Use a flag with usage function as its value
 	helpFlag := flag.Bool("h", false, usage())

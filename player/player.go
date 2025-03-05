@@ -19,9 +19,10 @@ func CreatePlayer(playerType string, volume uint8, musicEndedChannel *chan bool)
 	var player Player
 	switch playerType {
 	case "beep":
-		player = &(BeepPlayer{
+		player = &(beepState{
 			volumePercent: volume,
 			musicEnded:    musicEndedChannel,
+			stopWatchEnd:  make(chan bool, 1),
 		})
 	}
 

@@ -13,7 +13,6 @@ import (
 	"github.com/gopxl/beep/v2/mp3"
 	"github.com/gopxl/beep/v2/speaker"
 	"github.com/gopxl/beep/v2/vorbis"
-	"github.com/lamasutra/bg-music/config"
 	"github.com/lamasutra/bg-music/model"
 	"github.com/lamasutra/bg-music/ui"
 )
@@ -27,16 +26,16 @@ type beepState struct {
 	sfxStreamer   beep.StreamSeekCloser
 	mixer         *beep.Mixer
 	sampleRate    beep.SampleRate
-	musicEnded    *chan (bool)
 	crossfadeNum  int
+	musicEnded    chan (bool)
 	stopWatchEnd  chan (bool)
 }
 
-func (p *beepState) getSfxPath(sfx *model.Sfx, c *config.Config) string {
+func (p *beepState) getSfxPath(sfx *model.Sfx, c *model.Config) string {
 	return c.Path + "/" + sfx.Path
 }
 
-func (p *beepState) getMusicPath(music *model.Music, c *config.Config) string {
+func (p *beepState) getMusicPath(music *model.Music, c *model.Config) string {
 	return c.Path + "/" + music.Path
 }
 
@@ -109,7 +108,7 @@ func (p *beepState) SetVolume(volume uint8) {
 	}
 }
 
-func (p *beepState) PlayMusic(music *model.Music, c *config.Config) (beep.StreamSeekCloser, error) {
+func (p *beepState) PlayMusic(music *model.Music, c *model.Config) (beep.StreamSeekCloser, error) {
 	path := p.getMusicPath(music, c)
 
 	p.currentMusic = music
@@ -140,15 +139,33 @@ func (p *beepState) PlayMusic(music *model.Music, c *config.Config) (beep.Stream
 	// beep.Take()streamer.
 
 	ui.Debug(fmt.Sprintf("playing music %v, duration: %vs", path, streamer.Len()/int(format.SampleRate)))
+	ui.SetCurrentMusicTitle(path)
 
 	return streamer, err
 }
 
-func (p *beepState) GetMusicEndedChan() *chan (bool) {
+func (p *beepState) GetMusicEndedChan() chan (bool) {
 	return p.musicEnded
 }
 
-func (p *beepState) PlaySfx(sfx *model.Sfx, c *config.Config) (beep.StreamSeekCloser, error) {
+func (p *beepState) GetCurrentMusic() *model.Music {
+	return p.currentMusic
+}
+
+func (p *beepState) GetCurrentMusicProgress() float64 {
+	if p.musicStreamer == nil {
+		ui.Error("cm is nil")
+		return 0.0
+	}
+	if p.musicStreamer.Len() == 0 {
+		ui.Error("cm is empty")
+		return 0.0
+	}
+
+	return float64(p.musicStreamer.Position()) / float64(p.musicStreamer.Len())
+}
+
+func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekCloser, error) {
 	path := p.getSfxPath(sfx, c)
 
 	streamer, format, err := p.openFile(path)
@@ -171,7 +188,8 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *config.Config) (beep.StreamSeekCl
 func (p *beepState) Init() {
 	p.mixer = &beep.Mixer{}
 	p.mixer.KeepAlive(true)
-	go p.watchStreamEnds()
+	p.musicEnded = make(chan bool)
+	go p.watchMusicStream()
 }
 
 func (p *beepState) Close() {
@@ -188,7 +206,7 @@ func (p *beepState) Close() {
 	}
 
 	if p.musicEnded != nil {
-		close(*p.musicEnded)
+		close(p.musicEnded)
 	}
 	if p.stopWatchEnd != nil {
 		p.stopWatchEnd <- true
@@ -197,7 +215,7 @@ func (p *beepState) Close() {
 	}
 }
 
-func (p *beepState) watchStreamEnds() {
+func (p *beepState) watchMusicStream() {
 	sleepTime := time.Millisecond * 100
 	ui.Debug("entering watchStreamEnds")
 	for {
@@ -212,12 +230,14 @@ func (p *beepState) watchStreamEnds() {
 			ui.Debug("exiting watchStreamEnds")
 			return
 		default:
+			// ui.
 			if (p.musicStreamer.Position() + p.crossfadeNum) >= p.musicStreamer.Len() {
 				ui.Debug("music", p.currentMusic.Path, "ending", "mem", &p.currentMusic)
-				*p.musicEnded <- true
+				p.musicEnded <- true
 			}
 		}
-
+		ui.SetCurrentMusicProgress(p.GetCurrentMusicProgress())
+		ui.Debug("p", p.GetCurrentMusicProgress(), "\n")
 		time.Sleep(sleepTime)
 	}
 }
@@ -241,6 +261,8 @@ func setVolume(volumeEffect *effects.Volume, volumePercent uint8) *effects.Volum
 		volumeEffect.Volume = realVolume
 		ui.Debug("setVolume on", volumeEffect, "to", realVolume, volumePercent)
 	}
+
+	ui.SetCurrentVolume(float64(volumePercent) / 100)
 
 	return volumeEffect
 }

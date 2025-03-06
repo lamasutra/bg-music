@@ -1,28 +1,19 @@
 package player
 
 import (
-	"github.com/gopxl/beep/v2"
-	"github.com/lamasutra/bg-music/config"
 	"github.com/lamasutra/bg-music/model"
 )
 
-type Player interface {
-	Init()
-	PlayMusic(music *model.Music, c *config.Config) (beep.StreamSeekCloser, error)
-	PlaySfx(sfx *model.Sfx, c *config.Config) (beep.StreamSeekCloser, error)
-	SetVolume(volume uint8)
-	GetMusicEndedChan() *chan (bool)
-	Close()
-}
+var player model.Player
 
-func CreatePlayer(playerType string, volume uint8, musicEndedChannel *chan bool) Player {
-	var player Player
+func CreatePlayer(playerType string) *model.Player {
+
 	switch playerType {
 	case "beep":
 		player = &(beepState{
-			volumePercent: volume,
-			musicEnded:    musicEndedChannel,
-			stopWatchEnd:  make(chan bool, 1),
+			// volumePercent: volume,
+			// musicEnded:    musicEndedChannel,
+			// stopWatchEnd:  make(chan bool, 1),
 		})
 	}
 
@@ -31,5 +22,9 @@ func CreatePlayer(playerType string, volume uint8, musicEndedChannel *chan bool)
 	}
 	player.Init()
 
-	return player
+	return &player
+}
+
+func GetCurrentPlayer() *model.Player {
+	return &player
 }

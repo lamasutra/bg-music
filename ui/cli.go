@@ -34,3 +34,15 @@ func (s *cliState) Error(args ...any) {
 	newArgs = append(newArgs, args...)
 	s.Debug(newArgs...)
 }
+
+func (s *cliState) SetCurrentMusicProgress(progress float64) {
+
+}
+
+func (s *cliState) SetCurrentMusicTitle(title string) {
+
+}
+
+func (s *cliState) SetCurrentVolume(volume float64) {
+
+}

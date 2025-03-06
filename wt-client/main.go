@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	var uis := ui.
 	var conf clientConfig.Config
 	err := conf.Read("wt-config.json")
 	if err != nil {

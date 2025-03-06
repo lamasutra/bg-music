@@ -3,19 +3,18 @@ package server
 import (
 	"errors"
 
-	"github.com/lamasutra/bg-music/config"
-	"github.com/lamasutra/bg-music/player"
+	"github.com/lamasutra/bg-music/model"
 	"github.com/lamasutra/bg-music/ui"
 )
 
 type ServerState struct {
 	state  string
-	config *config.Config
-	player player.Player
+	config *model.Config
+	player *model.Player
 }
 
 type Server interface {
-	Serve(*config.Config)
+	Serve(*model.Config, *model.Player)
 	Close()
 }
 
@@ -41,10 +40,10 @@ func triggerEvent(event string, srv *ServerState) error {
 		return err
 	}
 	if et.Volume != nil {
-		srv.player.SetVolume(uint8(*et.Volume))
+		(*srv.player).SetVolume(uint8(*et.Volume))
 	}
 
-	_, err = srv.player.PlaySfx(sfx, srv.config)
+	_, err = (*srv.player).PlaySfx(sfx, srv.config)
 	if err != nil {
 		ui.Error(err)
 		return err
@@ -67,10 +66,10 @@ func changeState(state string, srv *ServerState) error {
 		return err
 	}
 	if st.Volume != nil {
-		srv.player.SetVolume(uint8(*st.Volume))
+		(*srv.player).SetVolume(uint8(*st.Volume))
 	}
 
-	_, err = srv.player.PlayMusic(music, srv.config)
+	_, err = (*srv.player).PlayMusic(music, srv.config)
 	if err != nil {
 		ui.Error(err)
 		return err
@@ -86,7 +85,7 @@ func changeMusic(state string, srv *ServerState) error {
 		ui.Error(err)
 		return err
 	}
-	_, err = srv.player.PlayMusic(music, srv.config)
+	_, err = (*srv.player).PlayMusic(music, srv.config)
 
 	return err
 }

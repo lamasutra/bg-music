@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lamasutra/bg-music/config"
+	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/player"
 	"github.com/lamasutra/bg-music/server"
 	"github.com/lamasutra/bg-music/ui"
 )
@@ -24,34 +25,38 @@ func main() {
 	if cmdArgs == nil {
 		return
 	}
-	conf, err := config.Read(*cmdArgs.config)
+	config := &model.Config{}
+	err := config.Read(*cmdArgs.config)
 	if err != nil {
 		panic(err)
 	}
 
-	initUI(cmdArgs)
+	go initUI(cmdArgs)
 
-	// initServer
+	time.Sleep(time.Second)
+
+	mp := player.CreatePlayer(config.PlayerType)
+
+	defer (*mp).Close()
+
+	go initServer(config, mp)
+
 	for {
-		time.Sleep(time.Millisecond * 100)
-		if ui.Ready {
-			break
-		}
+		time.Sleep(time.Second)
 	}
+}
 
-	ui.Debug("Running as", conf.PlayerType, conf.ServerType)
-	// debug
-	// jsonPretty, _ := json.MarshalIndent(*conf, "", "  ")
-	// fmt.Println(string(jsonPretty))
+func initServer(config *model.Config, mp *model.Player) {
+	ui.Debug("Running as", config.PlayerType, config.ServerType)
 
-	server, err := server.CreateServer(conf.ServerType)
+	server, err := server.CreateServer(config.ServerType)
 	if err != nil {
 		panic(err)
 	}
 
 	defer server.Close()
 
-	server.Serve(conf)
+	server.Serve(config, mp)
 }
 
 func initUI(args *cmdArgs) {

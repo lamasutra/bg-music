@@ -28,15 +28,15 @@ func CreateServer(serverType string) (Server, error) {
 }
 
 func triggerEvent(event string, srv *ServerState) error {
-	ui.Debug("Received event:", event)
+	ui.Debug("Received event:", event, "\n")
 	et, err := srv.config.GetEvent(event)
 	if err != nil {
-		ui.Debug(err)
+		ui.Error(err, "\n")
 		return err
 	}
 	sfx, err := srv.config.GetRandomEventSfx(event)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 	if et.Volume != nil {
@@ -45,7 +45,7 @@ func triggerEvent(event string, srv *ServerState) error {
 
 	_, err = (*srv.player).PlaySfx(sfx, srv.config)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 
@@ -53,16 +53,16 @@ func triggerEvent(event string, srv *ServerState) error {
 }
 
 func changeState(state string, srv *ServerState) error {
-	ui.Debug("Received state:", state)
+	ui.Debug("Received state:", state, "\n")
 	srv.state = state
 	st, err := srv.config.GetState(state)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 	if st.Volume != nil {
@@ -71,7 +71,7 @@ func changeState(state string, srv *ServerState) error {
 
 	_, err = (*srv.player).PlayMusic(music, srv.config)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 
@@ -79,10 +79,10 @@ func changeState(state string, srv *ServerState) error {
 }
 
 func changeMusic(state string, srv *ServerState) error {
-	ui.Debug("changing music")
+	ui.Debug("changing music\n")
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		ui.Error(err)
+		ui.Error(err, "\n")
 		return err
 	}
 	_, err = (*srv.player).PlayMusic(music, srv.config)

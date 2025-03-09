@@ -104,7 +104,10 @@ func (p *PipeServer) loadConfig(data *LoadData) {
 	p.state.config.Events = data.Events
 	p.state.config.States = data.States
 
-	// str, _ := json.MarshalIndent(p.state.config, "", "  ")
+	str, _ := json.MarshalIndent(p.state.config, "", "  ")
+	ui.Debug(string(str))
+
+	//
 	// fmt.Println("loaded:", string(str))
 }
 
@@ -112,17 +115,17 @@ func (p *PipeServer) handleControl(control string) error {
 	req := &Request{}
 	err := json.Unmarshal([]byte(control), req)
 	if err != nil {
-		ui.Error(err, req)
+		ui.Error(err, req, "\n")
 		return err
 	}
-	ui.Debug("Received control:", req.Action)
+	ui.Debug("Received control:", req.Action, "\n")
 
 	switch req.Action {
 	case "load":
 		loadRequest := &LoadRequest{}
 		err := json.Unmarshal([]byte(control), loadRequest)
 		if err != nil {
-			ui.Error("data", err)
+			ui.Error("data", err, "\n")
 			return err
 		}
 		p.loadConfig(&loadRequest.Data)

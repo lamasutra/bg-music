@@ -9,12 +9,14 @@ import (
 	"github.com/lamasutra/bg-music/wt-client/player"
 	"github.com/lamasutra/bg-music/wt-client/stateMachine"
 	"github.com/lamasutra/bg-music/wt-client/types"
+	"github.com/lamasutra/bg-music/wt-client/utils"
 )
 
 const sleepTime = time.Millisecond * 500
 const sleepOffline = time.Millisecond * 1000
 
 var state_ts int64
+var currentVehicle *model.Vehicle
 
 var inputData = &types.WtData{
 	State:      &client.State{},
@@ -108,8 +110,14 @@ func parseInput(conf *model.Config) {
 		input.PlayerLanded = input.MissionStarted && player == nil && !isShotDown && !hasCrashed
 		input.PlayerDead = input.MissionStarted && player == nil && (isShotDown || hasCrashed)
 		// fmt.Println("dead conds", input.PlayerDead, isShotDown, hasCrashed)
-		input.PlayerType = inputData.Indicators.Army
-		input.PlayerVehicle = inputData.Indicators.Type
+
+		// vehicle changed
+		if input.PlayerVehicle != inputData.Indicators.Type {
+			input.PlayerType = inputData.Indicators.Army
+			input.PlayerVehicle = inputData.Indicators.Type
+			currentVehicle = conf.GetVehicleForPlayerTypeAndVehicleTitle(input.PlayerType, input.PlayerVehicle)
+		}
+
 		// @todo last known location
 		if player != nil {
 			nearestAir := getNearestEntity(player, enemyAircrafts, inputData.MapObj, inputData.MapInfo)
@@ -156,6 +164,7 @@ func parseInput(conf *model.Config) {
 		input.EnemyGroundNear = false
 		input.PlayerType = ""
 		input.PlayerVehicle = ""
+		currentVehicle = nil
 	}
 
 	(*inputMapBool)["MapLoaded"] = input.MapLoaded
@@ -183,6 +192,10 @@ func parseInput(conf *model.Config) {
 	// fmt.Println("Game:", state)
 }
 
+func getCurrentVehicle() *model.Vehicle {
+	return currentVehicle
+}
+
 func getNearestEntity(player *client.Entity, entities *[]client.Entity, mapObj *client.MapObj, mapInfo *client.MapInfo) *client.Entity {
 	var nearest *client.Entity
 	var distance, lastDistance float64
@@ -197,18 +210,23 @@ func getNearestEntity(player *client.Entity, entities *[]client.Entity, mapObj *
 	return nearest
 }
 
-func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMachine, player player.BgPlayer) {
-	// fmt.Println(inputData)
+func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMachine, bgPlayer player.BgPlayer) {
+	fmt.Println(inputData)
 
 	currentState := stMachine.GetCurrentState()
-	var newState string
+	var newState, state string
 	var current_ts int64
 	var cooldown_s int64
+	var currentVehicle string
+	var vehicleConf *model.Vehicle
+	var vehicleTheme *model.Theme
+	var themeState model.State
+	var ok bool
 
 	// @todo find recent state
 	fmt.Print("sending default state ", currentState, " ... ")
 
-	err := player.SendState(currentState)
+	err := bgPlayer.SendState(currentState)
 	if err != nil {
 		fmt.Println("failed")
 	} else {
@@ -218,40 +236,87 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 	for {
 		loadData(host)
 		parseInput(conf)
-		current_ts = time.Now().Unix()
+		// if !input.GameRunning {
+		// 	fmt.Println("game not running yet")
+		// 	time.Sleep(sleepOffline)
+		// 	continue
+		// }
+		// vehicle changed
+		if currentVehicle != input.PlayerVehicle {
+			fmt.Print("vehicle change to")
+			currentVehicle = input.PlayerVehicle
+			if currentVehicle != "" {
+				fmt.Println(" " + currentVehicle)
+				vehicleConf = getCurrentVehicle()
+				fmt.Println("vehicle", vehicleConf)
+				vehicleTheme = conf.GetThemeForVehicle(vehicleConf)
+				fmt.Println("vehicle theme", utils.JsonPretty(vehicleTheme))
+				bgPlayer.SendEventStates(&model.EventStates{
+					Events: vehicleTheme.Events,
+					States: vehicleTheme.States,
+				})
+				fmt.Println("sent")
+			} else {
+				fmt.Println(" none")
+			}
+		}
 		// fast forward state
 		newState = ""
 		for {
-			state, err := stMachine.GetNextState(inputMapBool)
+			current_ts = time.Now().Unix()
+			// fmt.Println("special loop", newState, current_ts)
+			state, err = stMachine.GetNextState(inputMapBool)
 			if err != nil {
-				// fmt.Println("getNextState failed", err)
-				break
-			}
-			// state change cooldown, do not set state in colldown period
-			if current_ts < (state_ts + cooldown_s) {
+				fmt.Println("getNextState failed", err)
+				cooldown_s = 0
 				break
 			}
 			// fmt.Println("st", state, stMachine.GetCurrentState())
 			if state != "" {
 				newState = state
+
+				// check for cooldown -1
+				if vehicleTheme != nil && cooldown_s > 0 {
+					fmt.Println("checking cooldown reset", "state", newState)
+					themeState, ok = vehicleTheme.States[newState]
+					if ok && themeState.BreaksCooldown == 1 {
+						cooldown_s = 0
+						fmt.Println("reset cooldown", cooldown_s, "s", "state", newState)
+					}
+				}
+				// state change cooldown, do not set state in colldown period
+				if current_ts < (state_ts + cooldown_s) {
+					fmt.Println("cooldown in effect", current_ts, state_ts, cooldown_s)
+					time.Sleep(time.Millisecond * 100)
+					continue
+				}
+
 				stMachine.SetState(state)
 				state_ts = time.Now().Unix()
-				// fmt.Println("state", state)
+				fmt.Println("state", state)
 			} else {
 				if newState != "" {
-					// fmt.Println("new state:", newState)
-					player.SendState(newState)
-					cooldown_s = conf.
-					// } else {
+					fmt.Println("new state:", newState)
+					if vehicleTheme != nil {
+						themeState, ok := vehicleTheme.States[newState]
+						if ok {
+							cooldown_s = themeState.Cooldown
+						} else {
+							cooldown_s = 0
+						}
+						fmt.Println("cooldown", cooldown_s, "s")
+					}
+					bgPlayer.SendState(newState)
+					currentState = newState
+				} else {
 					// fmt.Println("state not changed")
-					// }
 				}
 				break
 			}
 			time.Sleep(time.Millisecond * 100)
 		}
 
-		// fmt.Println(inputMapBool)
+		// fmt.Println(utils.JsonPretty(inputMapBool))
 		time.Sleep(sleepTime)
 	}
 }

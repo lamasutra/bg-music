@@ -18,18 +18,18 @@ func main() {
 		return
 	}
 
-	// fmt.Println("your nickname", conf.Nickname)
+	fmt.Println("your nickname", conf.Nickname)
 
-	player := player.CreatePlayer(conf.BgPlayerType, &conf)
+	bgPayer := player.CreatePlayer(conf.BgPlayerType, &conf)
 	stMachine := stateMachine.New("idle", &conf.StateRules)
 
 	// debug
-	// fmt.Println(stMachine)
+	fmt.Println(stMachine)
 
-	defer player.Close()
+	defer bgPayer.Close()
 	for {
-		input.LoadLoop(conf.Host, &conf, stMachine, player)
-		time.Sleep(time.Millisecond * 50)
+		input.LoadLoop(conf.Host, &conf, stMachine, bgPayer)
+		time.Sleep(time.Millisecond * 100)
 		// fmt.Println("tick")
 	}
 }

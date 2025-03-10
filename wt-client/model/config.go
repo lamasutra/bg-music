@@ -4,16 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/lamasutra/bg-music/wt-client/utils"
 )
+
+var mergedThemesCache map[string]Theme = make(map[string]Theme)
 
 type Sfx struct {
 	Path string `json:"path"`
-}
-
-type Vehicle struct {
-	Title  string         `json:"title"`
-	Theme  string         `json:"theme"`
-	Volume map[string]int `json:"volume"`
 }
 
 type Map struct {
@@ -86,16 +84,44 @@ func (c *Config) getTheme(theme string) *Theme {
 	return &found
 }
 
-func (c *Config) mergeThemes(from string, to string) *Theme {
-	themeFrom := c.getTheme(from)
-	themeTo := c.getTheme(to)
+func (c *Config) GetVehicleForPlayerTypeAndVehicleTitle(playerType string, title string) *Vehicle {
+	typeConf := c.getVehicleConfig(playerType)
+	vehicleConf := c.getVehicleConfig(title)
+	if vehicleConf.Theme == "" {
+		vehicleConf.Theme = "default"
+	}
 
-	return themeFrom.Merge(*themeTo)
+	return vehicleConf.merge(*typeConf)
 }
 
-func (c *Config) GetConfigForPlayerVehicle(playerType string, vehicle string) {
-	typeConf := c.getVehicleConfig(playerType)
-	vehicleConf := c.getVehicleConfig(vehicle)
+func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
+	cacheKey := vehicle.Title
+	if cacheKey == "" {
+		cacheKey = vehicle.Type
+	}
+	// fmt.Println("cache key", cacheKey)
+	theme, ok := mergedThemesCache[cacheKey]
+	if ok {
+		// fmt.Println("found in cache")
+		return &theme
+	}
 
-	// typeConf.
+	// fmt.Println("preparing")
+	defaultTheme := *c.getTheme("default")
+	fmt.Println("default theme", utils.JsonPretty(defaultTheme))
+	theme = *c.getTheme(vehicle.Theme)
+	fmt.Println("vehicle theme", utils.JsonPretty(theme))
+	theme = *defaultTheme.merge(theme)
+
+	fmt.Println(utils.JsonPretty(theme))
+
+	if vehicle.Volume > 0 {
+		theme.States = theme.forceStateVolume(vehicle.Volume)
+	}
+	// fmt.Println("merging", utils.JsonPretty(theme))
+
+	mergedThemesCache[cacheKey] = theme
+	// fmt.Println("storing")
+
+	return &theme
 }

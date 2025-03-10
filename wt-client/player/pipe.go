@@ -35,8 +35,14 @@ func (p *PipePlayer) SendEventStates(ec *model.EventStates) error {
 	return nil
 }
 
+// func (p *PipePlayer) ChangeVehicle(v *model.Vehicle) {
+
+// }
+
 func (p *PipePlayer) SendState(state string) error {
 	_, err := p.statePipe.WriteString(state + "\n")
+
+	fmt.Println("state sent", state)
 
 	return err
 }
@@ -48,19 +54,23 @@ func (p *PipePlayer) TriggerEvent(event string) error {
 }
 
 func (p *PipePlayer) Init(c *model.Config) {
+	fmt.Println("waiting for connection to bg player")
 	var err error
 	p.controlPipe, err = os.OpenFile("../control.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("control pipe opened")
 	p.statePipe, err = os.OpenFile("../state.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("state pipe opened")
 	p.eventPipe, err = os.OpenFile("../event.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("event pipe opened")
 
 	defaultTheme := c.Themes["default"]
 

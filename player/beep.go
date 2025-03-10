@@ -180,7 +180,7 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekClo
 		return nil, err
 	}
 
-	ui.Debug(fmt.Sprintln("playing sfx %v", path))
+	ui.Debug("playing sfx ", path)
 
 	return streamer, err
 }

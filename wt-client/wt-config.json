@@ -16,13 +16,13 @@
         "default": {
             "events": {
                 "airKill": {
-                    "volume": 100,
+                    "volume": 80,
                     "sfx": [
                         {"path": "sfx/tfx/air-kill.mp3"}
                     ]
                 },
                 "groundKill": {
-                    "volume": 100,
+                    "volume": 80,
                     "sfx": [
                         {"path": "sfx/tfx/ground-kill.mp3"}
                     ]
@@ -31,6 +31,7 @@
             "states": {
                 "idle": {
                     "volume": 50,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "crusader/1/08 Track 8.mp3",
@@ -50,7 +51,8 @@
                     ]
                 },
                 "start": {
-                    "volume": 100,
+                    "volume": 80,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/01 Introduction.flac",
@@ -71,6 +73,7 @@
                 },
                 "landed": {
                     "volume": 100,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/02 Enrol.flac",
@@ -111,6 +114,7 @@
                 },
                 "danger_air": {
                     "volume": 80,
+                    "cooldown": 0,
                     "music": [
                         {
                             "path": "tfx-sc55/09 Defence Suppression.flac",
@@ -131,6 +135,7 @@
                 },
                 "danger_ground": {
                     "volume": 80,
+                    "cooldown": 0,
                     "music": [
                         {
                             "path": "tfx-sc55/10 Anti Armour.flac",
@@ -151,6 +156,7 @@
                 },
                 "battle_air": {
                     "volume": 100,
+                    "cooldown": 15,
                     "music": [
                         {
                             "path": "tfx-sc55/16 Battle.flac",
@@ -161,6 +167,7 @@
                 },
                 "battle_ground": {
                     "volume": 100,
+                    "cooldown": 7,
                     "music": [
                         {
                             "path": "tfx-sc55/17 Sea Battle.flac",
@@ -175,7 +182,7 @@
                     ]
                 },
                 "clear": {
-                    "volume": 100,
+                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-sc55/13 Interdict.flac",
@@ -191,6 +198,7 @@
                 },
                 "death": {
                     "volume": 80,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/27 Death.flac",
@@ -201,6 +209,7 @@
                 },
                 "success": {
                     "volume": 80,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/28 Successful Flying.flac",
@@ -211,6 +220,7 @@
                 },
                 "failure": {
                     "volume": 80,
+                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-adlib/26 Unsuccessful Flying.flac",
@@ -222,23 +232,8 @@
             }
         },
         "tfx-adlib": {
-            "events": {
-                "airKill": {
-                    "volume": 100,
-                    "sfx": [
-                        {"path": "sfx/tfx/air-kill.mp3"}
-                    ]
-                },
-                "groundKill": {
-                    "volume": 100,
-                    "sfx": [
-                        {"path": "sfx/tfx/ground-kill.mp3"}
-                    ]
-                }
-            },
             "states": {
                 "idle": {
-                    "volume": 50,
                     "music": [
                         {
                             "path": "crusader/1/08 Track 8.mp3",
@@ -258,7 +253,6 @@
                     ]
                 },
                 "start": {
-                    "volume": 100,
                     "music": [
                         {
                             "path": "tfx-adlib/01-introduction.mp3",
@@ -268,7 +262,6 @@
                     ]
                 },
                 "load": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/03-intermission.mp3",
@@ -278,7 +271,6 @@
                     ]
                 },
                 "landed": {
-                    "volume": 100,
                     "music": [
                         {
                             "path": "tfx-adlib/02-enrol.mp3",
@@ -288,7 +280,6 @@
                     ]
                 },
                 "begin": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/04-columbia.mp3",
@@ -318,7 +309,6 @@
                     ]
                 },
                 "danger_air": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/09-defence-suppression.mp3",
@@ -338,7 +328,6 @@
                     ]
                 },
                 "danger_ground": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/10-anti-armour.mp3",
@@ -358,7 +347,6 @@
                     ]
                 },
                 "battle_air": {
-                    "volume": 100,
                     "music": [
                         {
                             "path": "tfx-adlib/16-battle.mp3",
@@ -368,7 +356,6 @@
                     ]
                 },
                 "battle_ground": {
-                    "volume": 100,
                     "music": [
                         {
                             "path": "tfx-adlib/17-sea-battle.mp3",
@@ -383,7 +370,6 @@
                     ]
                 },
                 "clear": {
-                    "volume": 100,
                     "music": [
                         {
                             "path": "tfx-adlib/13-interdict.mp3",
@@ -398,7 +384,6 @@
                     ]
                 },
                 "death": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/27-death.mp3",
@@ -408,7 +393,6 @@
                     ]
                 },
                 "success": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/28-successful.mp3",
@@ -418,7 +402,6 @@
                     ]
                 },
                 "failure": {
-                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-adlib/26-unsuccessful.mp3",
@@ -435,15 +418,19 @@
     },
     "vehicles": {
         "tank": {
-            "volume": 20
+            "volume": 20,
+            "type": "tank"
         },
         "air": {
-            
+            "type": "air"
+        },
+        "ef_2000_block_10": {
+            "theme": "tfx-adlib"
         }
     },
     "state_rules": {
         "idle": {
-            "states": ["start"],
+            "states": ["start", "load", "begin"],
             "conditions_bool": {
                 "GameRunning": false
             }

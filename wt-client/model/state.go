@@ -1,14 +1,16 @@
 package model
 
 type State struct {
-	Volume   int     `json:"volume"`
-	Music    []Music `json:"music"`
-	Colldown uint16  `json:"cooldown"`
+	Volume         int     `json:"volume"`
+	Music          []Music `json:"music"`
+	Cooldown       int64   `json:"cooldown"`
+	BreaksCooldown int8    `json:"breaks_cooldown"`
 }
 
 type StateRule struct {
 	States         []string        `json:"states"`
 	ConditionsBool map[string]bool `json:"conditions_bool"`
+	// ConditionsDistance map[string]uint64 `json:"conditions_bool"`
 }
 
 func (s *State) merge(st State) State {
@@ -24,10 +26,15 @@ func (s *State) merge(st State) State {
 	} else {
 		dest.Music = s.Music
 	}
-	if st.Colldown > 0 {
-		dest.Colldown = st.Colldown
+	if st.Cooldown > 0 {
+		dest.Cooldown = st.Cooldown
 	} else {
-		dest.Colldown = s.Colldown
+		dest.Cooldown = s.Cooldown
+	}
+	if st.BreaksCooldown != 0 {
+		dest.BreaksCooldown = st.BreaksCooldown
+	} else {
+		dest.BreaksCooldown = s.BreaksCooldown
 	}
 
 	return dest

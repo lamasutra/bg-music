@@ -80,7 +80,7 @@ func (p *beepState) openFile(path string) (beep.StreamSeekCloser, beep.Format, e
 }
 
 func (p *beepState) play(streamer beep.Streamer, format beep.Format) error {
-	ui.Debug("format:", format, "\n")
+	ui.Debug("format:", format)
 	if !p.initialized {
 		err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 		if err != nil {
@@ -138,7 +138,7 @@ func (p *beepState) PlayMusic(music *model.Music, c *model.Config) (beep.StreamS
 	// fmt.Println("str len", streamer.Len(), p.crossfadeNum)
 	// beep.Take()streamer.
 
-	ui.Debug(fmt.Sprintf("playing music %v, duration: %vs\n", path, streamer.Len()/int(format.SampleRate)))
+	ui.Debug(fmt.Sprintf("playing music %v, duration: %vs", path, streamer.Len()/int(format.SampleRate)))
 	ui.SetCurrentMusicTitle(path)
 
 	return streamer, err
@@ -154,11 +154,11 @@ func (p *beepState) GetCurrentMusic() *model.Music {
 
 func (p *beepState) GetCurrentMusicProgress() float64 {
 	if p.musicStreamer == nil {
-		ui.Error("cm is nil\n")
+		ui.Error("cm is nil")
 		return 0.0
 	}
 	if p.musicStreamer.Len() == 0 {
-		ui.Error("cm is empty\n")
+		ui.Error("cm is empty")
 		return 0.0
 	}
 
@@ -180,7 +180,7 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekClo
 		return nil, err
 	}
 
-	ui.Debug(fmt.Sprintln("playing sfx %v\n", path))
+	ui.Debug(fmt.Sprintln("playing sfx %v", path))
 
 	return streamer, err
 }
@@ -217,27 +217,27 @@ func (p *beepState) Close() {
 
 func (p *beepState) watchMusicStream() {
 	sleepTime := time.Millisecond * 100
-	ui.Debug("entering watchStreamEnds\n")
+	ui.Debug("entering watchStreamEnds")
 	for {
 		if p.musicStreamer == nil {
-			ui.Debug("no stream yet\n")
+			ui.Debug("no stream yet")
 			time.Sleep(sleepTime)
 			continue
 		}
 
 		select {
 		case <-p.stopWatchEnd:
-			ui.Debug("exiting watchStreamEnds\n")
+			ui.Debug("exiting watchStreamEnds")
 			return
 		default:
 			// ui.
 			if (p.musicStreamer.Position() + p.crossfadeNum) >= p.musicStreamer.Len() {
-				ui.Debug("music", p.currentMusic.Path, "ending", "mem", &p.currentMusic, "\n")
+				ui.Debug("music", p.currentMusic.Path, "ending", "mem", &p.currentMusic)
 				p.musicEnded <- true
 			}
 		}
 		ui.SetCurrentMusicProgress(p.GetCurrentMusicProgress())
-		// ui.Debug("p", p.GetCurrentMusicProgress(), "\n")
+		// ui.Debug("p", p.GetCurrentMusicProgress())
 		time.Sleep(sleepTime)
 	}
 }
@@ -259,7 +259,7 @@ func setVolume(volumeEffect *effects.Volume, volumePercent uint8) *effects.Volum
 		volumeEffect.Silent = false
 		realVolume := float64(volumePercent)/20 - 5
 		volumeEffect.Volume = realVolume
-		ui.Debug("setVolume on", volumeEffect, "to", realVolume, volumePercent, "\n")
+		ui.Debug("setVolume on", volumeEffect, "to", realVolume, volumePercent)
 	}
 
 	ui.SetCurrentVolume(float64(volumePercent) / 100)

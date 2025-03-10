@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/client"
-	"github.com/lamasutra/bg-music/wt-client/clientConfig"
+	"github.com/lamasutra/bg-music/wt-client/model"
 	"github.com/lamasutra/bg-music/wt-client/player"
 	"github.com/lamasutra/bg-music/wt-client/stateMachine"
 	"github.com/lamasutra/bg-music/wt-client/types"
@@ -14,19 +14,7 @@ import (
 const sleepTime = time.Millisecond * 500
 const sleepOffline = time.Millisecond * 1000
 
-// var chRead chan = make(chan WtData)
-// var chInput chan = make(chan WtInput)
-
-// process data
-// func (in *WtInput) Read() {
-// 	for {
-// 		case wtData := <-ch:
-
-// 		default:
-// 			time.Sleep(time.Millisecond * 50)
-// 		}
-// 	}
-// }
+var state_ts int64
 
 var inputData = &types.WtData{
 	State:      &client.State{},
@@ -96,7 +84,7 @@ func loadData(host string) {
 	}
 }
 
-func parseInput(conf *clientConfig.Config) {
+func parseInput(conf *model.Config) {
 	// fmt.Println("Data:", inputData)
 
 	input.MapLoaded = inputData.MapInfo.Valid
@@ -209,11 +197,13 @@ func getNearestEntity(player *client.Entity, entities *[]client.Entity, mapObj *
 	return nearest
 }
 
-func LoadLoop(host string, conf *clientConfig.Config, stMachine *stateMachine.StateMachine, player player.BgPlayer) {
+func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMachine, player player.BgPlayer) {
 	// fmt.Println(inputData)
 
 	currentState := stMachine.GetCurrentState()
 	var newState string
+	var current_ts int64
+	var cooldown_s int64
 
 	// @todo find recent state
 	fmt.Print("sending default state ", currentState, " ... ")
@@ -228,6 +218,7 @@ func LoadLoop(host string, conf *clientConfig.Config, stMachine *stateMachine.St
 	for {
 		loadData(host)
 		parseInput(conf)
+		current_ts = time.Now().Unix()
 		// fast forward state
 		newState = ""
 		for {
@@ -236,15 +227,21 @@ func LoadLoop(host string, conf *clientConfig.Config, stMachine *stateMachine.St
 				// fmt.Println("getNextState failed", err)
 				break
 			}
+			// state change cooldown, do not set state in colldown period
+			if current_ts < (state_ts + cooldown_s) {
+				break
+			}
 			// fmt.Println("st", state, stMachine.GetCurrentState())
 			if state != "" {
 				newState = state
 				stMachine.SetState(state)
+				state_ts = time.Now().Unix()
 				// fmt.Println("state", state)
 			} else {
 				if newState != "" {
 					// fmt.Println("new state:", newState)
 					player.SendState(newState)
+					cooldown_s = conf.
 					// } else {
 					// fmt.Println("state not changed")
 					// }

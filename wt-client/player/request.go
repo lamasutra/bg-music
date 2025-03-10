@@ -1,6 +1,6 @@
 package player
 
-import "github.com/lamasutra/bg-music/wt-client/clientConfig"
+import "github.com/lamasutra/bg-music/wt-client/model"
 
 type Request struct {
 	Action string      `json:"action"`
@@ -8,6 +8,6 @@ type Request struct {
 }
 
 type EventStates struct {
-	Events map[string]clientConfig.Event `json:"events"`
-	States map[string]clientConfig.State `json:"states"`
+	Events map[string]model.Event `json:"events"`
+	States map[string]model.State `json:"states"`
 }

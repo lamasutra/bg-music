@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/term"
 )
 
 const (
@@ -38,7 +39,7 @@ type tuiLogsView struct {
 }
 
 type tuiModel struct {
-	log      string
+	log      []string
 	music    tuiMusicProgressbar
 	volume   tuiVolumeProgressbar
 	logsView tuiLogsView
@@ -53,7 +54,8 @@ func NewTui() *tuiModel {
 			model: progress.New(),
 		},
 	}
-	p := tea.NewProgram(tm, tea.WithAltScreen(), tea.WithMouseAllMotion())
+	p := tea.NewProgram(tm, tea.WithAltScreen())
+	// tea.WithMouseAllMotion()
 	go func() {
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Alas, there's been an error: %v", err)
@@ -65,10 +67,11 @@ func NewTui() *tuiModel {
 }
 
 func (m *tuiModel) Debug(args ...any) {
-	var newArgs []any
-	newArgs = []any{time.Now().Format("15:04:05.000")}
-	newArgs = append(newArgs, args...)
-	m.log += fmt.Sprintln(newArgs...)
+	str := time.Now().Format("15:04:05.000") + " " + fmt.Sprint(args...)
+	if !strings.Contains(str, "\n") {
+		str += "\n"
+	}
+	m.log = append(m.log, str)
 }
 
 func (m *tuiModel) Error(args ...any) {
@@ -90,8 +93,24 @@ func (m *tuiModel) SetCurrentVolume(volume float64) {
 }
 
 func (m *tuiModel) Init() tea.Cmd {
-	vp, _ := logsViewport(78)
-	renderer, _ := logsRenderer(&vp, 78)
+	if term.IsTerminal(0) {
+		Debug("in a term")
+	} else {
+		Debug("not in a term")
+	}
+	width, height, err := term.GetSize(0)
+	if err != nil {
+		width = 78
+		height = 16
+	} else {
+		width -= 3
+		height -= 10
+	}
+
+	Debug("term size: ", width, height)
+
+	vp, _ := logsViewport(width, height)
+	renderer, _ := logsRenderer(&vp, width)
 	m.logsView = tuiLogsView{
 		vp:       vp,
 		renderer: renderer,
@@ -133,10 +152,10 @@ func (m *tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.logsView.renderer.Close()
 
 		m.logsView.renderer, _ = logsRenderer(&m.logsView.vp, m.logsView.vp.Width)
-		return m, nil
+		return m, tickCmd()
 
 	case tickMsg:
-		str, _ := m.logsView.renderer.Render(m.log)
+		str, _ := m.logsView.renderer.Render(strings.Join(m.log, "\n"))
 
 		m.logsView.vp.SetContent(str)
 
@@ -169,13 +188,13 @@ func (m *tuiModel) helpView() string {
 }
 
 func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Millisecond*100, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }
 
-func logsViewport(width int) (viewport.Model, error) {
-	vp := viewport.New(width, 16)
+func logsViewport(width int, height int) (viewport.Model, error) {
+	vp := viewport.New(width, height)
 	vp.Style = lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("62")).

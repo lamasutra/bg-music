@@ -1,16 +1,16 @@
 package player
 
-import "github.com/lamasutra/bg-music/wt-client/clientConfig"
+import "github.com/lamasutra/bg-music/wt-client/model"
 
 type BgPlayer interface {
-	Init(*clientConfig.Config)
-	SendEventStates(*clientConfig.EventStates) error
+	Init(*model.Config)
+	SendEventStates(*model.EventStates) error
 	TriggerEvent(event string) error
 	SendState(event string) error
 	Close()
 }
 
-func CreatePlayer(playerType string, c *clientConfig.Config) BgPlayer {
+func CreatePlayer(playerType string, c *model.Config) BgPlayer {
 	var player BgPlayer
 	switch playerType {
 	case "pipe":

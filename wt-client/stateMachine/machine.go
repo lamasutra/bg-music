@@ -3,16 +3,16 @@ package stateMachine
 import (
 	"errors"
 
-	"github.com/lamasutra/bg-music/wt-client/clientConfig"
+	"github.com/lamasutra/bg-music/wt-client/model"
 	"github.com/lamasutra/bg-music/wt-client/types"
 )
 
 type StateMachine struct {
 	state string
-	rules *map[string]clientConfig.StateRule
+	rules *map[string]model.StateRule
 }
 
-func New(state string, rules *map[string]clientConfig.StateRule) *StateMachine {
+func New(state string, rules *map[string]model.StateRule) *StateMachine {
 	return &StateMachine{
 		state: state,
 		rules: rules,
@@ -45,6 +45,7 @@ func (sm *StateMachine) GetNextState(input *types.WtInputMapBool) (string, error
 }
 
 func (sm *StateMachine) SetState(state string) {
+
 	sm.state = state
 }
 
@@ -57,7 +58,7 @@ func (sm *StateMachine) getPossibleStateCodes() (*[]string, error) {
 	return &state.States, nil
 }
 
-func (sm *StateMachine) getStateRule(state string) (*clientConfig.StateRule, error) {
+func (sm *StateMachine) getStateRule(state string) (*model.StateRule, error) {
 	rule, ok := (*sm.rules)[state]
 	if !ok {
 		return nil, errors.New("unknown state " + state)
@@ -66,7 +67,7 @@ func (sm *StateMachine) getStateRule(state string) (*clientConfig.StateRule, err
 	return &rule, nil
 }
 
-func checkConditions(input *types.WtInputMapBool, rule *clientConfig.StateRule) bool {
+func checkConditions(input *types.WtInputMapBool, rule *model.StateRule) bool {
 	matches := true
 	for key, val := range rule.ConditionsBool {
 		// fmt.Println("  checking", key, "for", val)

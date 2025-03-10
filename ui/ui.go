@@ -2,20 +2,15 @@ package ui
 
 import "github.com/lamasutra/bg-music/model"
 
-var Ready bool
 var state model.UI
 
-func CreateUI(ui string) model.UI {
+func CreateUI(ui string) {
 	switch ui {
 	case "tui":
 		state = NewTui()
 	default:
 		state = NewCli()
 	}
-
-	Ready = true
-
-	return state
 }
 
 func Debug(args ...any) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lamasutra/bg-music/wt-client/clientConfig"
+	"github.com/lamasutra/bg-music/wt-client/model"
 )
 
 type PipePlayer struct {
@@ -19,7 +19,7 @@ type PipeRequest struct {
 	Data   interface{} `json:"data"`
 }
 
-func (p *PipePlayer) SendEventStates(ec *clientConfig.EventStates) error {
+func (p *PipePlayer) SendEventStates(ec *model.EventStates) error {
 	req := PipeRequest{}
 	req.Action = "load"
 	req.Data = ec
@@ -47,7 +47,7 @@ func (p *PipePlayer) TriggerEvent(event string) error {
 	return err
 }
 
-func (p *PipePlayer) Init(c *clientConfig.Config) {
+func (p *PipePlayer) Init(c *model.Config) {
 	var err error
 	p.controlPipe, err = os.OpenFile("../control.pipe", os.O_WRONLY, 0644)
 	if err != nil {
@@ -64,7 +64,7 @@ func (p *PipePlayer) Init(c *clientConfig.Config) {
 
 	defaultTheme := c.Themes["default"]
 
-	ec := clientConfig.EventStates{
+	ec := model.EventStates{
 		Events: defaultTheme.Events,
 		States: defaultTheme.States,
 	}

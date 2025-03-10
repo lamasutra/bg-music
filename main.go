@@ -31,7 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	go initUI(cmdArgs)
+	initUI(cmdArgs)
 
 	time.Sleep(time.Second)
 
@@ -47,7 +47,7 @@ func main() {
 }
 
 func initServer(config *model.Config, mp *model.Player) {
-	ui.Debug("Running as", config.PlayerType, config.ServerType)
+	ui.Debug("Running as ", config.PlayerType, " ", config.ServerType)
 
 	server, err := server.CreateServer(config.ServerType)
 	if err != nil {

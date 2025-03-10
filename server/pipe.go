@@ -115,17 +115,17 @@ func (p *PipeServer) handleControl(control string) error {
 	req := &Request{}
 	err := json.Unmarshal([]byte(control), req)
 	if err != nil {
-		ui.Error(err, req, "\n")
+		ui.Error(err, req)
 		return err
 	}
-	ui.Debug("Received control:", req.Action, "\n")
+	ui.Debug("Received control:", req.Action)
 
 	switch req.Action {
 	case "load":
 		loadRequest := &LoadRequest{}
 		err := json.Unmarshal([]byte(control), loadRequest)
 		if err != nil {
-			ui.Error("data", err, "\n")
+			ui.Error("data", err)
 			return err
 		}
 		p.loadConfig(&loadRequest.Data)

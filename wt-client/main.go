@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lamasutra/bg-music/wt-client/clientConfig"
 	"github.com/lamasutra/bg-music/wt-client/input"
+	"github.com/lamasutra/bg-music/wt-client/model"
 	"github.com/lamasutra/bg-music/wt-client/player"
 	"github.com/lamasutra/bg-music/wt-client/stateMachine"
 )
 
 func main() {
-	var conf clientConfig.Config
+	var conf model.Config
 	err := conf.Read("wt-config.json")
 	if err != nil {
 		fmt.Println("Cannot read wt-config.json")

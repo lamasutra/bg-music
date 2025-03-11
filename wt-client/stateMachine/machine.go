@@ -9,10 +9,10 @@ import (
 
 type StateMachine struct {
 	state string
-	rules *map[string]model.StateRule
+	rules *model.StateRules
 }
 
-func New(state string, rules *map[string]model.StateRule) *StateMachine {
+func New(state string, rules *model.StateRules) *StateMachine {
 	return &StateMachine{
 		state: state,
 		rules: rules,

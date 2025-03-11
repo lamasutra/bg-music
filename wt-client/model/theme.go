@@ -1,20 +1,52 @@
 package model
 
-import (
-	"fmt"
-
-	"github.com/lamasutra/bg-music/wt-client/utils"
-)
-
 type EventStates struct {
 	Events map[string]Event `json:"events"`
 	States map[string]State `json:"states"`
 }
 
+type ObjDistance struct {
+	Combat uint32 `json:"combat"`
+	Danger uint32 `json:"danger"`
+	// Safe   uint32 `json:"safe"`
+}
+type Distances struct {
+	Air    ObjDistance `json:"air"`
+	Ground ObjDistance `json:"ground"`
+}
+
 type Theme struct {
-	Title  string
-	Events map[string]Event `json:"events"`
-	States map[string]State `json:"states"`
+	Title     string           `json:"title"`
+	Events    map[string]Event `json:"events"`
+	States    map[string]State `json:"states"`
+	Distances Distances        `json:"distances"`
+	Extend    string           `json:"extend"`
+}
+
+func (d *Distances) merge(with Distances) *Distances {
+	merged := Distances{}
+	if with.Air.Combat > 0 {
+		merged.Air.Combat = with.Air.Combat
+	} else {
+		merged.Air.Combat = d.Air.Combat
+	}
+	if with.Air.Danger > 0 {
+		merged.Air.Danger = with.Air.Danger
+	} else {
+		merged.Air.Danger = d.Air.Danger
+	}
+	if with.Ground.Combat > 0 {
+		merged.Ground.Combat = with.Ground.Combat
+	} else {
+		merged.Ground.Combat = d.Ground.Combat
+	}
+	if with.Ground.Danger > 0 {
+		merged.Ground.Danger = with.Ground.Danger
+	} else {
+		merged.Ground.Danger = d.Ground.Danger
+	}
+
+	return &merged
 }
 
 func (t *Theme) mergeEvents(events map[string]Event) map[string]Event {
@@ -60,12 +92,13 @@ func (t *Theme) forceStateVolume(volume int) map[string]State {
 
 func (t *Theme) merge(with Theme) *Theme {
 	merged := &Theme{
-		Title:  with.Title,
-		Events: t.mergeEvents(with.Events),
-		States: t.mergeStates(with.States),
+		Title:     with.Title,
+		Events:    t.mergeEvents(with.Events),
+		States:    t.mergeStates(with.States),
+		Distances: *t.Distances.merge(with.Distances),
 	}
 
-	fmt.Println("merged theme", utils.JsonPretty(merged))
+	// fmt.Println("merged theme", utils.JsonPretty(merged))
 
 	return merged
 }

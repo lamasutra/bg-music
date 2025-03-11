@@ -109,6 +109,10 @@ func (p *beepState) SetVolume(volume uint8) {
 }
 
 func (p *beepState) PlayMusic(music *model.Music, c *model.Config) (beep.StreamSeekCloser, error) {
+	return p.PlayMusicAtVolume(music, c, p.volumePercent)
+}
+
+func (p *beepState) PlayMusicAtVolume(music *model.Music, c *model.Config, volume uint8) (beep.StreamSeekCloser, error) {
 	path := p.getMusicPath(music, c)
 
 	p.currentMusic = music
@@ -120,12 +124,12 @@ func (p *beepState) PlayMusic(music *model.Music, c *model.Config) (beep.StreamS
 	}
 
 	if p.musicStreamer != nil {
-		p.volumeEffect = p.crossfadeCurrent(&streamer)
+		p.volumeEffect = p.crossfadeCurrent(&streamer, volume)
 		p.musicStreamer = streamer
 	} else {
 		p.volumeEffect = wrapStreamerByVolumeEffect(&streamer)
 		p.musicStreamer = streamer
-		p.SetVolume(p.volumePercent)
+		p.SetVolume(volume)
 
 		err = p.play(p.volumeEffect, format)
 		if err != nil {
@@ -267,11 +271,11 @@ func setVolume(volumeEffect *effects.Volume, volumePercent uint8) *effects.Volum
 	return volumeEffect
 }
 
-func (p *beepState) crossfadeCurrent(streamer *beep.StreamSeekCloser) *effects.Volume {
+func (p *beepState) crossfadeCurrent(streamer *beep.StreamSeekCloser, newVolume uint8) *effects.Volume {
 	ui.Debug("crossfading", p.crossfadeNum)
 	currentSample := beep.Take(p.crossfadeNum, p.volumeEffect)
 	newVolumeEffect := wrapStreamerByVolumeEffect(streamer)
-	setVolume(newVolumeEffect, p.volumePercent)
+	setVolume(newVolumeEffect, newVolume)
 	newSample := beep.Take(p.crossfadeNum, newVolumeEffect)
 	mixed := crossfade(&currentSample, &newSample, p.crossfadeNum)
 

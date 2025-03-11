@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/lamasutra/bg-music/wt-client/utils"
 )
 
 var mergedThemesCache map[string]Theme = make(map[string]Theme)
@@ -27,13 +25,13 @@ type Music struct {
 }
 
 type Config struct {
-	Nickname     string               `json:"nickname"`
-	Host         string               `json:"host"`
-	BgPlayerType string               `json:"bg_player_type"`
-	Themes       map[string]Theme     `json:"themes"`
-	Maps         map[string]Map       `json:"maps"`
-	Vehicles     map[string]Vehicle   `json:"vehicles"`
-	StateRules   map[string]StateRule `json:"state_rules"`
+	Nickname     string             `json:"nickname"`
+	Host         string             `json:"host"`
+	BgPlayerType string             `json:"bg_player_type"`
+	Themes       map[string]Theme   `json:"themes"`
+	Maps         map[string]Map     `json:"maps"`
+	Vehicles     map[string]Vehicle `json:"vehicles"`
+	StateRules   StateRules         `json:"state_rules"`
 	Colors       struct {
 		Enemy struct {
 			Air    []string `json:"air"`
@@ -80,6 +78,12 @@ func (c *Config) getTheme(theme string) *Theme {
 	if !exists {
 		return &Theme{}
 	}
+	if found.Extend != "" {
+		extend, exists := c.Themes[found.Extend]
+		if exists {
+			found = *extend.merge(found)
+		}
+	}
 
 	return &found
 }
@@ -106,19 +110,11 @@ func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
 		return &theme
 	}
 
-	// fmt.Println("preparing")
-	defaultTheme := *c.getTheme("default")
-	fmt.Println("default theme", utils.JsonPretty(defaultTheme))
 	theme = *c.getTheme(vehicle.Theme)
-	fmt.Println("vehicle theme", utils.JsonPretty(theme))
-	theme = *defaultTheme.merge(theme)
-
-	fmt.Println(utils.JsonPretty(theme))
 
 	if vehicle.Volume > 0 {
 		theme.States = theme.forceStateVolume(vehicle.Volume)
 	}
-	// fmt.Println("merging", utils.JsonPretty(theme))
 
 	mergedThemesCache[cacheKey] = theme
 	// fmt.Println("storing")

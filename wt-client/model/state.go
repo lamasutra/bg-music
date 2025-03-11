@@ -7,12 +7,6 @@ type State struct {
 	BreaksCooldown int8    `json:"breaks_cooldown"`
 }
 
-type StateRule struct {
-	States         []string        `json:"states"`
-	ConditionsBool map[string]bool `json:"conditions_bool"`
-	// ConditionsDistance map[string]uint64 `json:"conditions_bool"`
-}
-
 func (s *State) merge(st State) State {
 	var dest State
 

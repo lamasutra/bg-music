@@ -9,7 +9,6 @@ import (
 	"github.com/lamasutra/bg-music/wt-client/player"
 	"github.com/lamasutra/bg-music/wt-client/stateMachine"
 	"github.com/lamasutra/bg-music/wt-client/types"
-	"github.com/lamasutra/bg-music/wt-client/utils"
 )
 
 const sleepTime = time.Millisecond * 500
@@ -17,6 +16,7 @@ const sleepOffline = time.Millisecond * 1000
 
 var state_ts int64
 var currentVehicle *model.Vehicle
+var currentTheme *model.Theme
 
 var inputData = &types.WtData{
 	State:      &client.State{},
@@ -90,6 +90,7 @@ func parseInput(conf *model.Config) {
 	// fmt.Println("Data:", inputData)
 
 	input.MapLoaded = inputData.MapInfo.Valid
+	var objDistance float64
 
 	if input.MapLoaded {
 		player := inputData.MapObj.GetPlayerEntity()
@@ -116,6 +117,7 @@ func parseInput(conf *model.Config) {
 			input.PlayerType = inputData.Indicators.Army
 			input.PlayerVehicle = inputData.Indicators.Type
 			currentVehicle = conf.GetVehicleForPlayerTypeAndVehicleTitle(input.PlayerType, input.PlayerVehicle)
+			currentTheme = conf.GetThemeForVehicle(currentVehicle)
 		}
 
 		// @todo last known location
@@ -125,14 +127,28 @@ func parseInput(conf *model.Config) {
 
 			// @todo configurable in theme
 			if nearestAir != nil {
-				input.EnemyAirNear = inputData.MapObj.GetDistance(player, nearestAir, inputData.MapInfo) < 10000
-				input.EnemyAirClose = inputData.MapObj.GetDistance(player, nearestAir, inputData.MapInfo) < 5000
+				objDistance = inputData.MapObj.GetDistance(player, nearestAir, inputData.MapInfo)
+				// 10000
+				input.EnemyAirNear = objDistance < float64(currentTheme.Distances.Air.Danger)
+				// 5000
+				input.EnemyAirClose = objDistance < float64(currentTheme.Distances.Air.Combat)
+				// fmt.Println("air dist", objDistance, float64(currentTheme.Distances.Air.Danger), float64(currentTheme.Distances.Air.Combat), input.EnemyAirNear, input.EnemyAirClose)
+			} else {
+				input.EnemyAirNear = false
+				input.EnemyAirClose = false
 			}
 
 			// @todo configurable in theme
 			if nearestGround != nil {
-				input.EnemyGroundNear = inputData.MapObj.GetDistance(player, nearestGround, inputData.MapInfo) < 20000
-				input.EnemyGroundClose = inputData.MapObj.GetDistance(player, nearestGround, inputData.MapInfo) < 1000
+				inputData.MapObj.GetDistance(player, nearestGround, inputData.MapInfo)
+				// 20000
+				input.EnemyGroundNear = objDistance < float64(currentTheme.Distances.Ground.Danger)
+				// 1000
+				input.EnemyGroundClose = objDistance < float64(currentTheme.Distances.Ground.Combat)
+			} else {
+				// fmt.Println("ground dist", objDistance, float64(currentTheme.Distances.Ground.Danger), float64(currentTheme.Distances.Ground.Combat))
+				input.EnemyGroundNear = false
+				input.EnemyGroundClose = false
 			}
 
 			// @todo enemy base
@@ -248,14 +264,14 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 			if currentVehicle != "" {
 				fmt.Println(" " + currentVehicle)
 				vehicleConf = getCurrentVehicle()
-				fmt.Println("vehicle", vehicleConf)
+				// fmt.Println("vehicle", vehicleConf)
 				vehicleTheme = conf.GetThemeForVehicle(vehicleConf)
-				fmt.Println("vehicle theme", utils.JsonPretty(vehicleTheme))
+				// fmt.Println("vehicle theme", utils.JsonPretty(vehicleTheme))
 				bgPlayer.SendEventStates(&model.EventStates{
 					Events: vehicleTheme.Events,
 					States: vehicleTheme.States,
 				})
-				fmt.Println("sent")
+				// fmt.Println("sent")
 			} else {
 				fmt.Println(" none")
 			}

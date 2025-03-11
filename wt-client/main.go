@@ -17,6 +17,11 @@ func main() {
 		fmt.Println("Cannot read wt-config.json")
 		return
 	}
+	err = conf.StateRules.Read("rules.json")
+	if err != nil {
+		fmt.Println("Cannot read rules.json")
+		return
+	}
 
 	fmt.Println("your nickname", conf.Nickname)
 

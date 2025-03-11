@@ -7,6 +7,7 @@ import (
 type Player interface {
 	Init()
 	PlayMusic(music *Music, c *Config) (beep.StreamSeekCloser, error)
+	PlayMusicAtVolume(music *Music, c *Config, volume uint8) (beep.StreamSeekCloser, error)
 	PlaySfx(sfx *Sfx, c *Config) (beep.StreamSeekCloser, error)
 	SetVolume(volume uint8)
 	GetMusicEndedChan() chan (bool)

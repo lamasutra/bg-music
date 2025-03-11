@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/model"
 )
@@ -84,6 +85,7 @@ func (p *PipePlayer) Init(c *model.Config) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	time.Sleep(time.Millisecond * 50)
 }
 
 func (p *PipePlayer) Close() {

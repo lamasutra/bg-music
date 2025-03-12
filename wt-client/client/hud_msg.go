@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -21,6 +22,10 @@ type Damage struct {
 	Mode   string `json:"mode"`
 	Time   int    `json:"time"`
 }
+
+const playerShotDownRegExpTemplate = `%s\s+\([^\)]+\)\s+shot\s+down\s+[^\(]+\([^\)]+\)`
+
+// const playerShootDownEnemyRegexp = `[^\(]+\s+\([^\)]+\)\s+shot\s+down\s+[^\(]+\([^\)]+\)`
 
 func (hudMsg *HudMsg) Unmarshal(jsonBytes []byte) error {
 	return json.Unmarshal(jsonBytes, &hudMsg)
@@ -53,6 +58,17 @@ func (hudMsg *HudMsg) HasCrashed(nickname string) bool {
 func (hudMsg *HudMsg) IsShotDown(nickname string) bool {
 	for _, msg := range hudMsg.Damage {
 		if strings.Contains(msg.Msg, "shot down "+nickname) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (hudMsg *HudMsg) HadKill(nickname string) bool {
+	pattern := fmt.Sprintf(playerShotDownRegExpTemplate, nickname)
+	for _, msg := range hudMsg.Damage {
+		if matches, _ := regexp.MatchString(pattern, msg.Msg); matches {
 			return true
 		}
 	}

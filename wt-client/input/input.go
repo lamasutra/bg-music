@@ -98,6 +98,7 @@ func parseInput(conf *model.Config) {
 		enemyGroundUnits := inputData.MapObj.GetEnemyGroundUnits(&conf.Colors.Enemy.Ground)
 		isShotDown := inputData.HudMsg.IsShotDown(conf.Nickname)
 		hasCrashed := inputData.HudMsg.HasCrashed(conf.Nickname)
+		playerScored := inputData.HudMsg.HadKill(conf.Nickname)
 		// isMissionEnded := inputData.hudMsg.IsMissionEnded()
 		input.MissionEnded = false
 		if !input.MissionStarted {

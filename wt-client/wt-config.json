@@ -26,16 +26,25 @@
                 }
             },
             "events": {
+                "bandits": {
+                    "volume": 100,
+                    "sfx": [
+                        {"path": "sfx/tfx/bandits-bandits-break.flac"}
+                    ]
+                },
                 "airKill": {
                     "volume": 80,
                     "sfx": [
-                        {"path": "sfx/tfx/air-kill.mp3"}
+                        {"path": "sfx/tfx/kill.flac"},
+                        {"path": "sfx/tfx/toasted-bogie.flac"},
+                        {"path": "sfx/tfx/good-shot.flac"}
                     ]
                 },
                 "groundKill": {
                     "volume": 80,
                     "sfx": [
-                        {"path": "sfx/tfx/ground-kill.mp3"}
+                        {"path": "sfx/tfx/kill.flac"},
+                        {"path": "sfx/tfx/good-shot.flac"}
                     ]
                 }
             },
@@ -244,6 +253,7 @@
         },
         "tfx-adlib": {
             "extend": "default",
+            "title": "AdLib theme",
             "states": {
                 "idle": {
                     "music": [

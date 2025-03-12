@@ -50,7 +50,7 @@ func (d *Distances) merge(with Distances) *Distances {
 }
 
 func (t *Theme) mergeEvents(events map[string]Event) map[string]Event {
-	var merged map[string]Event = make(map[string]Event)
+	var merged map[string]Event = t.Events
 
 	for evKey, event := range events {
 		destEvent, exists := t.Events[evKey]
@@ -65,7 +65,7 @@ func (t *Theme) mergeEvents(events map[string]Event) map[string]Event {
 }
 
 func (t *Theme) mergeStates(states map[string]State) map[string]State {
-	var merged map[string]State = make(map[string]State)
+	var merged map[string]State = t.States
 
 	for stKey, state := range states {
 		destState, exists := t.States[stKey]
@@ -91,14 +91,24 @@ func (t *Theme) forceStateVolume(volume int) map[string]State {
 }
 
 func (t *Theme) merge(with Theme) *Theme {
-	merged := &Theme{
-		Title:     with.Title,
+	merged := Theme{
 		Events:    t.mergeEvents(with.Events),
 		States:    t.mergeStates(with.States),
 		Distances: *t.Distances.merge(with.Distances),
 	}
 
+	if with.Title != "" {
+		merged.Title = with.Title
+	} else {
+		merged.Title = t.Title
+	}
+	if with.Extend != "" {
+		merged.Extend = with.Extend
+	} else {
+		merged.Extend = t.Extend
+	}
+
 	// fmt.Println("merged theme", utils.JsonPretty(merged))
 
-	return merged
+	return &merged
 }

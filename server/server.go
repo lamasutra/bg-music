@@ -22,6 +22,8 @@ func CreateServer(serverType string) (Server, error) {
 	switch serverType {
 	case "pipe":
 		return NewPipeServer(), nil
+	case "http":
+		return NewHttpServer(), nil
 	}
 
 	return nil, errors.New("unknown server type " + serverType)

@@ -15,3 +15,11 @@ type LoadRequest struct {
 	Request
 	Data LoadData `json:"data"`
 }
+
+type StateRequest struct {
+	State string `json:"state"`
+}
+
+type EventRequest struct {
+	Event string `json:"event"`
+}

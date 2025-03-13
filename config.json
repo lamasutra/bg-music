@@ -1,6 +1,6 @@
 {
     "player_type": "beep",
-    "server_type": "pipe",
+    "server_type": "http",
     "volume": 0,
     "path": "music",
     "states": {

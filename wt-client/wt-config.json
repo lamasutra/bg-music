@@ -1,7 +1,8 @@
 {
     "nickname": "-Tygri- xbladecz",
     "host": "http://localhost:8111/",
-    "bg_player_type": "pipe",
+    "bg_player_type": "http",
+    "bg_player_host": "http://localhost:8211/",
     "colors": {
         "enemy": {
             "air": ["#f00c00", "#fa0c00"],
@@ -35,7 +36,10 @@
                 "airKill": {
                     "volume": 80,
                     "sfx": [
-                        {"path": "sfx/tfx/kill.flac"},
+                        {
+                            "volume": 50,
+                            "path": "sfx/tfx/kill.flac"
+                        },
                         {"path": "sfx/tfx/toasted-bogie.flac"},
                         {"path": "sfx/tfx/good-shot.flac"}
                     ]
@@ -43,7 +47,10 @@
                 "groundKill": {
                     "volume": 80,
                     "sfx": [
-                        {"path": "sfx/tfx/kill.flac"},
+                        {
+                            "volume": 50,
+                            "path": "sfx/tfx/kill.flac"
+                        },
                         {"path": "sfx/tfx/good-shot.flac"}
                     ]
                 }

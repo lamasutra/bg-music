@@ -31,18 +31,15 @@ func CreateServer(serverType string) (Server, error) {
 
 func triggerEvent(event string, srv *ServerState) error {
 	ui.Debug("Received event:", event)
-	et, err := srv.config.GetEvent(event)
+	ev, err := srv.config.GetEvent(event)
 	if err != nil {
 		ui.Error(err)
 		return err
 	}
-	sfx, err := srv.config.GetRandomEventSfx(event)
+	sfx, err := ev.GetRandomSfx()
 	if err != nil {
 		ui.Error(err)
 		return err
-	}
-	if et.Volume != nil {
-		(*srv.player).SetVolume(uint8(*et.Volume))
 	}
 
 	_, err = (*srv.player).PlaySfx(sfx, srv.config)

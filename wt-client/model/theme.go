@@ -50,7 +50,11 @@ func (d *Distances) merge(with Distances) *Distances {
 }
 
 func (t *Theme) mergeEvents(events map[string]Event) map[string]Event {
-	var merged map[string]Event = t.Events
+	var merged map[string]Event = make(map[string]Event)
+
+	for stKey, event := range t.Events {
+		merged[stKey] = event
+	}
 
 	for evKey, event := range events {
 		destEvent, exists := t.Events[evKey]
@@ -65,10 +69,14 @@ func (t *Theme) mergeEvents(events map[string]Event) map[string]Event {
 }
 
 func (t *Theme) mergeStates(states map[string]State) map[string]State {
-	var merged map[string]State = t.States
+	var merged map[string]State = make(map[string]State)
+
+	for stKey, state := range t.States {
+		merged[stKey] = state
+	}
 
 	for stKey, state := range states {
-		destState, exists := t.States[stKey]
+		destState, exists := merged[stKey]
 		if exists {
 			merged[stKey] = destState.merge(state)
 		} else {

@@ -3,7 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"time"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/lamasutra/bg-music/model"
 	"github.com/lamasutra/bg-music/player"
@@ -21,6 +25,10 @@ type cmdArgs struct {
 }
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6061", nil))
+	}()
+
 	cmdArgs := registerFlags()
 	if cmdArgs == nil {
 		return
@@ -93,6 +101,7 @@ func usage() string {
 Usage:
   -h|--help   Show this message and exit
   -v          Print version information
+  --tui       Render text user interface
 
 Flags:
   config	The config file path (defauklt: "config.json")

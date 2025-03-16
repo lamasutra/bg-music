@@ -23,7 +23,8 @@ type Damage struct {
 	Time   int    `json:"time"`
 }
 
-const playerShotDownRegExpTemplate = `%s\s+\([^\)]+\)\s+shot\s+down\s+[^\(]+\([^\)]+\)`
+const playerShotDownRegExpTemplate = `%s.+(shot\s+down|destroyed).+` // [^\(]+\([^\)]+\)
+// const playerShotDownRegExpTemplate = `%s\s+\([^\)]+\)\s+(shot\s+down|destroyed)\s+` // [^\(]+\([^\)]+\)
 
 // const playerShootDownEnemyRegexp = `[^\(]+\s+\([^\)]+\)\s+shot\s+down\s+[^\(]+\([^\)]+\)`
 
@@ -74,6 +75,18 @@ func (hudMsg *HudMsg) HadKill(nickname string) bool {
 	}
 
 	return false
+}
+
+func (hudMsg *HudMsg) GetLastKillTime(nickname string) int {
+	var lastKillTime int
+	pattern := fmt.Sprintf(playerShotDownRegExpTemplate, nickname)
+	for _, msg := range hudMsg.Damage {
+		if matches, _ := regexp.MatchString(pattern, msg.Msg); matches {
+			lastKillTime = msg.Time
+		}
+	}
+
+	return lastKillTime
 }
 
 func (hudMsg *HudMsg) IsMissionEnded() bool {

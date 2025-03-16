@@ -66,6 +66,12 @@ func NewTui() *tuiModel {
 	return tm
 }
 
+func (m *tuiModel) Write(p []byte) (n int, err error) {
+	m.log = append(m.log, string(p))
+
+	return len(p), nil
+}
+
 func (m *tuiModel) Debug(args ...any) {
 	str := time.Now().Format("15:04:05.000") + " " + fmt.Sprint(args...)
 	if !strings.Contains(str, "\n") {
@@ -152,7 +158,7 @@ func (m *tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.logsView.renderer.Close()
 
 		m.logsView.renderer, _ = logsRenderer(&m.logsView.vp, m.logsView.vp.Width)
-		return m, tickCmd()
+		return m, nil
 
 	case tickMsg:
 		str, _ := m.logsView.renderer.Render(strings.Join(m.log, "\n"))

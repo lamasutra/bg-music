@@ -2,12 +2,37 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 )
 
 type Event struct {
-	Volume *int  `json:"volume"`
+	Volume int   `json:"volume"`
 	Sfx    []Sfx `json:"sfx"`
+}
+
+func (e *Event) GetRandomSfx() (*Sfx, error) {
+	var index uint8
+	length := len(e.Sfx)
+	if length > 1 {
+		index = uint8(rand.Intn(length))
+		// ui.Debug("random sfx index:", index)
+	} else {
+		index = 0
+	}
+	return e.GetSfx(index)
+}
+
+func (e *Event) GetSfx(index uint8) (*Sfx, error) {
+	if int(index) > len(e.Sfx) {
+		return nil, fmt.Errorf("sfx index %d does not exists", index)
+	}
+	sfx := e.Sfx[index]
+	if sfx.Volume == 0 {
+		sfx.Volume = uint8(e.Volume)
+	}
+
+	return &sfx, nil
 }
 
 func (c *Config) GetEvent(event string) (*Event, error) {
@@ -17,35 +42,6 @@ func (c *Config) GetEvent(event string) (*Event, error) {
 	} else {
 		return &Event{}, errors.New("event not found")
 	}
-}
-
-func (c *Config) GetEventSfx(event string, index uint8) (*Sfx, error) {
-	ev, err := c.GetEvent(event)
-	if err != nil {
-		return &Sfx{}, err
-	}
-
-	sfx := ev.Sfx[index]
-	return &sfx, nil
-}
-
-func (c *Config) GetRandomEventSfx(event string) (*Sfx, error) {
-	ev, err := c.GetEvent(event)
-	if err != nil {
-		return &Sfx{}, err
-	}
-	var index uint8
-	length := len(ev.Sfx)
-	if length > 1 {
-		index = uint8(rand.Intn(length))
-		// ui.Debug("random sfx index:", index)
-	} else {
-		index = 0
-	}
-
-	song, err := c.GetEventSfx(event, index)
-
-	return song, err
 }
 
 func (c *Config) EventExists(event string) bool {

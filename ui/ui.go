@@ -34,3 +34,7 @@ func SetCurrentVolume(value float64) {
 	// Debug("progress", value)
 	state.SetCurrentVolume(value)
 }
+
+func GetState() *model.UI {
+	return &state
+}

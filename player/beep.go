@@ -179,12 +179,17 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekClo
 
 	p.sfxStreamer = streamer
 
-	err = p.play(streamer, format)
+	ui.Debug(sfx)
+
+	volumeSfxStreamer := wrapStreamerByVolumeEffect(&streamer)
+	setVolume(volumeSfxStreamer, sfx.Volume)
+
+	err = p.play(volumeSfxStreamer, format)
 	if err != nil {
 		return nil, err
 	}
 
-	ui.Debug("playing sfx ", path)
+	ui.Debug("playing sfx ", path, sfx.Volume)
 
 	return streamer, err
 }

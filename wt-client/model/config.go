@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var mergedThemesCache map[string]Theme = make(map[string]Theme)
+var mergedThemesCache map[string]*Theme = make(map[string]*Theme)
 
 type Sfx struct {
 	Path string `json:"path"`
@@ -28,6 +28,7 @@ type Config struct {
 	Nickname     string             `json:"nickname"`
 	Host         string             `json:"host"`
 	BgPlayerType string             `json:"bg_player_type"`
+	BgPlayerHost string             `json:"bg_player_host"`
 	Themes       map[string]Theme   `json:"themes"`
 	Maps         map[string]Map     `json:"maps"`
 	Vehicles     map[string]Vehicle `json:"vehicles"`
@@ -78,46 +79,63 @@ func (c *Config) getTheme(theme string) *Theme {
 	if !exists {
 		return &Theme{}
 	}
+	fmt.Println("reference", fmt.Sprintf("%p", &found))
 	if found.Extend != "" {
 		extend, exists := c.Themes[found.Extend]
+		fmt.Println("reference extend", fmt.Sprintf("%p", &extend))
 		if exists {
 			found = *extend.merge(found)
+			fmt.Println("reference merge", fmt.Sprintf("%p", &found))
 		}
 	}
 
 	return &found
 }
 
-func (c *Config) GetVehicleForPlayerTypeAndVehicleTitle(playerType string, title string) *Vehicle {
+func (c *Config) GetVehicleForPlayerTypeAndVehicleType(playerType string, vehicleType string) *Vehicle {
 	typeConf := c.getVehicleConfig(playerType)
-	vehicleConf := c.getVehicleConfig(title)
+	vehicleConf := c.getVehicleConfig(vehicleType)
 	if vehicleConf.Theme == "" {
 		vehicleConf.Theme = "default"
 	}
 
-	return vehicleConf.merge(*typeConf)
+	conf := vehicleConf.merge(*typeConf)
+
+	if conf.Title == "" {
+		conf.Title = vehicleType
+	}
+
+	return conf
 }
 
 func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
+	fmt.Println("GetThemeForVehicle", vehicle)
 	cacheKey := vehicle.Title
 	if cacheKey == "" {
 		cacheKey = vehicle.Type
 	}
-	// fmt.Println("cache key", cacheKey)
+	fmt.Println("cache key", cacheKey)
 	theme, ok := mergedThemesCache[cacheKey]
 	if ok {
-		// fmt.Println("found in cache")
-		return &theme
+		js, _ := json.MarshalIndent(mergedThemesCache[cacheKey], "", "  ")
+		fmt.Println("found in cache", string(js))
+		return theme
 	}
 
-	theme = *c.getTheme(vehicle.Theme)
+	theme = c.getTheme(vehicle.Theme)
+	vehicleTheme := *theme
+	// fmt.Println("references", fmt.Sprintf("%p, %p", theme, &vehicleTheme))
 
 	if vehicle.Volume > 0 {
-		theme.States = theme.forceStateVolume(vehicle.Volume)
+		vehicleTheme.States = vehicleTheme.forceStateVolume(vehicle.Volume)
 	}
 
-	mergedThemesCache[cacheKey] = theme
+	mergedThemesCache[cacheKey] = &vehicleTheme
 	// fmt.Println("storing")
 
-	return &theme
+	return &vehicleTheme
+}
+
+func getMergedCache() *map[string]*Theme {
+	return &mergedThemesCache
 }

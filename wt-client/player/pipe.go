@@ -2,11 +2,11 @@ package player
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/model"
+	"github.com/lamasutra/bg-music/wt-client/ui"
 )
 
 type PipePlayer struct {
@@ -43,7 +43,7 @@ func (p *PipePlayer) SendEventStates(ec *model.EventStates) error {
 func (p *PipePlayer) SendState(state string) error {
 	_, err := p.statePipe.WriteString(state + "\n")
 
-	fmt.Println("state sent", state)
+	ui.Debug("state sent", state)
 
 	return err
 }
@@ -55,23 +55,23 @@ func (p *PipePlayer) TriggerEvent(event string) error {
 }
 
 func (p *PipePlayer) Init(c *model.Config) {
-	fmt.Println("waiting for connection to bg player")
+	ui.Debug("waiting for connection to bg player")
 	var err error
 	p.controlPipe, err = os.OpenFile("../control.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("control pipe opened")
+	ui.Debug("control pipe opened")
 	p.statePipe, err = os.OpenFile("../state.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("state pipe opened")
+	ui.Debug("state pipe opened")
 	p.eventPipe, err = os.OpenFile("../event.pipe", os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("event pipe opened")
+	ui.Debug("event pipe opened")
 
 	defaultTheme := c.Themes["default"]
 
@@ -80,10 +80,10 @@ func (p *PipePlayer) Init(c *model.Config) {
 		States: defaultTheme.States,
 	}
 
-	fmt.Println("Sending default theme events and states...")
+	ui.Debug("Sending default theme events and states...")
 	err = p.SendEventStates(&ec)
 	if err != nil {
-		fmt.Println(err)
+		ui.Error(err)
 	}
 	time.Sleep(time.Millisecond * 50)
 }

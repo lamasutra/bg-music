@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -38,12 +37,15 @@ func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
 
 	changeState("idle", h.state)
 
-	router := gin.Default()
-	router.POST("/control", controlHandler)
-	router.POST("/state", stateHandler)
-	router.POST("/event", eventHandler)
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = *ui.GetState()
 
-	router.Run(":8211")
+	router := gin.Default()
+	router.POST("/control/:action", controlHandler)
+	router.PUT("/state/:code", stateHandler)
+	router.PUT("/event/:code", eventHandler)
+
+	go polishAladinsLamp(router)
 
 	for {
 		select {
@@ -52,6 +54,13 @@ func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
 		default:
 			time.Sleep(sleepTime)
 		}
+	}
+}
+
+func polishAladinsLamp(router *gin.Engine) {
+	err := router.Run(":8211")
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -64,47 +73,39 @@ func (h *HttpServer) loadConfig(data *LoadData) {
 }
 
 func controlHandler(c *gin.Context) {
-	req := Request{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	action := c.Param("action")
 
-	ui.Debug("Received control:", req.Action)
+	ui.Debug("Received control:", action)
 
-	switch req.Action {
+	switch action {
 	case "load":
-		loadRequest := LoadRequest{}
-		if err := c.ShouldBindJSON(&loadRequest); err != nil {
+		data := LoadData{}
+		if err := c.ShouldBindJSON(&data); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		instance.loadConfig(&loadRequest.Data)
+		instance.loadConfig(&data)
+		c.Status(http.StatusNoContent)
+		return
 	case "next":
 		changeMusic(instance.state.state, instance.state)
+		c.Status(http.StatusNoContent)
+		return
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
-
 }
 
 func stateHandler(c *gin.Context) {
-	req := StateRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	changeState(req.State, instance.state)
+	state := c.Param("code")
+	changeState(state, instance.state)
+	c.Status(http.StatusNoContent)
 }
 
 func eventHandler(c *gin.Context) {
-	req := EventRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	fmt.Println(instance)
-	triggerEvent(req.Event, instance.state)
+	event := c.Param("code")
+	triggerEvent(event, instance.state)
+	c.Status(http.StatusNoContent)
 }
 
 func (h *HttpServer) Close() {

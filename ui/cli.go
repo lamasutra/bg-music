@@ -21,12 +21,16 @@ func (s *cliState) Debug(args ...any) {
 		hasR = true
 	}
 	if hasR {
-		newArgs = []any{"\r", time.Now().Format("15:04:05.000")}
+		newArgs = []any{"\r", time.Now().Format("15:04:05.000"), " "}
 	} else {
-		newArgs = []any{time.Now().Format("15:04:05.000")}
+		newArgs = []any{time.Now().Format("15:04:05.000"), " "}
 	}
 	newArgs = append(newArgs, args...)
-	fmt.Println(newArgs...)
+	fmt.Println(fmt.Sprint(newArgs...))
+}
+
+func (s *cliState) Write(p []byte) (n int, err error) {
+	return fmt.Println(string(p))
 }
 
 func (s *cliState) Error(args ...any) {

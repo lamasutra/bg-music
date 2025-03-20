@@ -82,7 +82,7 @@
                     "breaks_cooldown": 1,
                     "music": [
                         {
-                            "path": "tfx-sc55/01 Introduction.flac",
+                            "path": "tfx-cd/01 Introduction.flac",
                             "skip": 0,
                             "endBefore": 0
                         }
@@ -452,9 +452,6 @@
         },
         "air": {
             "type": "air"
-        },
-        "ef_2000_block_10": {
-            "theme": "tfx-adlib"
         }
     }
 }

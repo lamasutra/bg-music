@@ -2,6 +2,8 @@ package input
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/client"
@@ -14,6 +16,26 @@ import (
 
 const sleepTime = time.Millisecond * 500
 const sleepOffline = time.Millisecond * 1000
+
+const anyKillPattern = `shot\s+down|destroyed`
+
+var anyKillRegExp regexp.Regexp
+
+const playerShotDownPatternTemplate = `%s.+(shot\s+down|destroyed).+`
+
+var playerShotDownRegExp regexp.Regexp
+
+const playerIsShotDownPatternTemplate = `shot down %s`
+
+var playerIsShotDownRegExp regexp.Regexp
+
+const playerHasCrashedPatternTemplate = `%s.+has crashed`
+
+var playerHasCrashedRegExp regexp.Regexp
+
+// const playerShotDownRegExpTemplate = `%s\s+\([^\)]+\)\s+(shot\s+down|destroyed)\s+` // [^\(]+\([^\)]+\)
+
+// const playerShootDownEnemyRegexp = `[^\(]+\s+\([^\)]+\)\s+shot\s+down\s+[^\(]+\([^\)]+\)`
 
 var state_ts int64
 var currentVehicle *model.Vehicle
@@ -96,12 +118,14 @@ func parseInput(conf *model.Config) {
 	input.MapLoaded = inputData.MapInfo.Valid
 	var objDistance float64
 
+	current_ts := time.Now().Unix()
+
 	if input.MapLoaded {
 		player := inputData.MapObj.GetPlayerEntity()
 		enemyAircrafts := inputData.MapObj.GetEnemyAircrafts(&conf.Colors.Enemy.Air)
 		enemyGroundUnits := inputData.MapObj.GetEnemyGroundUnits(&conf.Colors.Enemy.Ground)
-		isShotDown := inputData.HudMsg.IsShotDown(conf.Nickname)
-		hasCrashed := inputData.HudMsg.HasCrashed(conf.Nickname)
+		isShotDown := playerIsShotDown(inputData.HudMsg)
+		hasCrashed := playerHasCrashed(inputData.HudMsg)
 		// isMissionEnded := inputData.hudMsg.IsMissionEnded()
 		input.MissionEnded = false
 		if !input.MissionStarted {
@@ -112,14 +136,18 @@ func parseInput(conf *model.Config) {
 			}
 			input.MissionStarted = player != nil // @todo what else ?
 		} else {
-			lastKillTime := inputData.HudMsg.GetLastKillTime(conf.Nickname)
+			lastKillTime := getLastKillTime(inputData.HudMsg)
 			if lastKillTime > 0 {
 				input.LastKillTime = lastKillTime
+			}
+			lastAnyKillTime := getLastAnyKillTime(inputData.HudMsg)
+			if lastAnyKillTime > 0 {
+				input.LastAnyKillTime = lastKillTime
 			}
 		}
 		input.PlayerLanded = input.MissionStarted && player == nil && !isShotDown && !hasCrashed
 		input.PlayerDead = input.MissionStarted && player == nil && (isShotDown || hasCrashed)
-		// fmt.Println("dead conds", input.PlayerDead, isShotDown, hasCrashed)
+		fmt.Println("dead conds", input.PlayerDead, isShotDown, hasCrashed)
 
 		// vehicle changed
 		if input.PlayerVehicle != inputData.Indicators.Type {
@@ -171,6 +199,9 @@ func parseInput(conf *model.Config) {
 		}
 
 		// only set lastDamage if player is dead and resurrected
+		if isMissionEnded(inputData.HudMsg) {
+			input.MissionEnded = true
+		}
 		// if input.PlayerDead && player != nil {
 		lastDamage := inputData.HudMsg.GetLastDmg()
 		if lastDamage != nil {
@@ -209,6 +240,10 @@ func parseInput(conf *model.Config) {
 	(*inputMapBool)["EnemyAirNear"] = input.EnemyAirNear
 	(*inputMapBool)["EnemyGroundClose"] = input.EnemyGroundClose
 	(*inputMapBool)["EnemyGroundNear"] = input.EnemyGroundNear
+	(*inputMapBool)["AirDanger"] = input.EnemyAirNear
+	(*inputMapBool)["AirBattle"] = input.EnemyAirClose || input.LastKillTime+30 > current_ts || input.LastAnyKillTime+30 > current_ts
+	(*inputMapBool)["GroundDanger"] = input.EnemyGroundNear
+	(*inputMapBool)["GroundBattle"] = input.EnemyGroundClose
 
 	// buf, _ := json.MarshalIndent(input, "", "  ")
 	// fmt.Println("Input", string(buf))
@@ -243,19 +278,25 @@ func getNearestEntity(player *client.Entity, entities *[]client.Entity, mapObj *
 }
 
 func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMachine, bgPlayer player.BgPlayer) {
-	// ui.Input(*inputData)
+	ui.Input(*input)
 
 	currentState := stMachine.GetCurrentState()
 	var newState, state string
-	var current_ts int64
+	// var current_ts int64
 	var cooldown_s int64
 	var currentVehicle string
 	var vehicleConf *model.Vehicle
 	var vehicleTheme *model.Theme
-	var themeState model.State
-	var lastKillTime int
-	var ok bool
+	// var themeState model.State
+	var lastKillTime int64
+	// var ok bool
 
+	playerShotDownRegExp = *regexp.MustCompile(fmt.Sprintf(playerShotDownPatternTemplate, conf.Nickname))
+	anyKillRegExp = *regexp.MustCompile(anyKillPattern)
+	playerHasCrashedRegExp = *regexp.MustCompile(fmt.Sprintf(playerHasCrashedPatternTemplate, conf.Nickname))
+	playerIsShotDownRegExp = *regexp.MustCompile(fmt.Sprintf(playerIsShotDownPatternTemplate, conf.Nickname))
+
+	fmt.Println(playerShotDownRegExp, anyKillRegExp, playerHasCrashedRegExp, playerIsShotDownRegExp)
 	// @todo find recent state
 	ui.Debug("sending default state ", currentState, " ... ")
 
@@ -269,7 +310,7 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 	for {
 		loadData(host)
 		parseInput(conf)
-		// ui.Input(*input)
+		ui.Input(*input)
 		if input.MissionStarted && lastKillTime < input.LastKillTime {
 			lastKillTime = input.LastKillTime
 			bgPlayer.TriggerEvent("airKill")
@@ -313,12 +354,12 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 		// fast forward state
 		newState = ""
 		for {
-			current_ts = time.Now().Unix()
+			// current_ts = time.Now().Unix()
 			// fmt.Println("special loop", newState, current_ts)
 			state, err = stMachine.GetNextState(inputMapBool)
 			if err != nil {
 				ui.Error("getNextState failed", err)
-				cooldown_s = 0
+				// cooldown_s = 0
 				break
 			}
 			// fmt.Println("st", state, stMachine.GetCurrentState())
@@ -329,20 +370,20 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 				newState = state
 
 				// check for cooldown -1
-				if vehicleTheme != nil && cooldown_s > 0 {
-					ui.Debug("checking cooldown reset", "state", newState)
-					themeState, ok = vehicleTheme.States[newState]
-					if ok && themeState.BreaksCooldown == 1 {
-						cooldown_s = 0
-						ui.Debug("reset cooldown", cooldown_s, "s", "state", newState)
-					}
-				}
+				// if vehicleTheme != nil && cooldown_s > 0 {
+				// 	ui.Debug("checking cooldown reset", "state", newState)
+				// 	themeState, ok = vehicleTheme.States[newState]
+				// 	if ok && themeState.BreaksCooldown == 1 {
+				// 		cooldown_s = 0
+				// 		ui.Debug("reset cooldown", cooldown_s, "s", "state", newState)
+				// 	}
+				// }
 				// state change cooldown, do not set state in colldown period
-				if current_ts < (state_ts + cooldown_s) {
-					ui.Debug("cooldown in effect", current_ts, state_ts, cooldown_s)
-					time.Sleep(time.Millisecond * 100)
-					continue
-				}
+				// if current_ts < (state_ts + cooldown_s) {
+				// 	ui.Debug("cooldown in effect", current_ts, state_ts, cooldown_s)
+				// 	time.Sleep(time.Millisecond * 100)
+				// 	continue
+				// }
 
 				stMachine.SetState(state)
 				state_ts = time.Now().Unix()
@@ -372,6 +413,45 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 		// ui.Debug("outer loop")
 		time.Sleep(sleepTime)
 	}
+}
+
+func isMissionEnded(hudMsg *client.HudMsg) bool {
+	for _, msg := range hudMsg.Damage {
+		if strings.Contains(msg.Msg, "has delivered the final blow!") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func playerHasCrashed(hudMsg *client.HudMsg) bool {
+	return getLastTimeForHudMsgAndPattern(hudMsg, &playerHasCrashedRegExp) > 0
+}
+
+func playerIsShotDown(hudMsg *client.HudMsg) bool {
+	return getLastTimeForHudMsgAndPattern(hudMsg, &playerIsShotDownRegExp) > 0
+}
+
+func getLastAnyKillTime(hudMsg *client.HudMsg) int64 {
+	return getLastTimeForHudMsgAndPattern(hudMsg, &anyKillRegExp)
+}
+
+func getLastKillTime(hudMsg *client.HudMsg) int64 {
+	return getLastTimeForHudMsgAndPattern(hudMsg, &playerShotDownRegExp)
+}
+
+func getLastTimeForHudMsgAndPattern(hudMsg *client.HudMsg, regExp *regexp.Regexp) int64 {
+	messages := hudMsg.MatchMessages(regExp)
+
+	// fmt.Println(messages)
+	length := len(messages)
+	if length == 0 {
+		return 0
+	}
+	lastMsg := messages[length-1]
+
+	return int64(lastMsg.Time)
 }
 
 // func loopInput() {

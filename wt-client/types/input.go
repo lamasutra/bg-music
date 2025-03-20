@@ -18,7 +18,8 @@ type WtInput struct {
 	EnemyAirBehind     bool
 	PlayerType         string
 	PlayerVehicle      string
-	LastKillTime       int
+	LastKillTime       int64
+	LastAnyKillTime    int64
 	NearestEnemyAir    float64
 	NearestEnemyGround float64
 }

@@ -94,7 +94,8 @@
             "PlayerLanded": false,
             "PlayerDead": false,
             "EnemyAirNear": true,
-            "EnemyAirClose": false
+            "EnemyAirClose": false,
+            "AirBattle": false
         },
         "conditions_bool_disabled": {
             "EnemyGroundNear": false,
@@ -122,7 +123,8 @@
             "EnemyAirNear": false,
             "EnemyAirClose": false,
             "EnemyGroundNear": true,
-            "EnemyGroundClose": false
+            "EnemyGroundClose": false,
+            "AirBattle": false
         }
     },
     "battle_air": {
@@ -143,7 +145,8 @@
             "PlayerLanded": false,
             "PlayerDead": false,
             "EnemyAirNear": true,
-            "EnemyAirClose": true
+            "EnemyAirClose": true,
+            "AirBattle": false
         },
         "conditions_bool_disabled": {
             "EnemyGroundNear": false,

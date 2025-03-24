@@ -31,6 +31,6 @@ func (s *cliState) Error(args ...any) {
 	s.Debug(newArgs...)
 }
 
-func (s *cliState) Input(in types.WtInput) {
-	s.Debug(in)
+func (s *cliState) Input(in *types.WtInput) {
+	s.Debug(*in)
 }

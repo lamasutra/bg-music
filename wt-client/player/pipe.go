@@ -20,7 +20,7 @@ type PipeRequest struct {
 	Data   interface{} `json:"data"`
 }
 
-func (p *PipePlayer) SendEventStates(ec *model.EventStates) error {
+func (p *PipePlayer) SendEventStates(ec *model.BgPlayerConfig) error {
 	req := PipeRequest{}
 	req.Action = "load"
 	req.Data = ec
@@ -54,6 +54,12 @@ func (p *PipePlayer) TriggerEvent(event string) error {
 	return err
 }
 
+func (p *PipePlayer) Speak(string) error {
+	ui.Debug("speak is not supported yet")
+
+	return nil
+}
+
 func (p *PipePlayer) Init(c *model.Config) {
 	ui.Debug("waiting for connection to bg player")
 	var err error
@@ -75,7 +81,7 @@ func (p *PipePlayer) Init(c *model.Config) {
 
 	defaultTheme := c.Themes["default"]
 
-	ec := model.EventStates{
+	ec := model.BgPlayerConfig{
 		Events: defaultTheme.Events,
 		States: defaultTheme.States,
 	}

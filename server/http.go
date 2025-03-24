@@ -44,6 +44,7 @@ func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
 	router.POST("/control/:action", controlHandler)
 	router.PUT("/state/:code", stateHandler)
 	router.PUT("/event/:code", eventHandler)
+	router.PUT("/speak", speakHandler)
 
 	go polishAladinsLamp(router)
 
@@ -67,6 +68,7 @@ func polishAladinsLamp(router *gin.Engine) {
 func (h *HttpServer) loadConfig(data *LoadData) {
 	h.state.config.Events = data.Events
 	h.state.config.States = data.States
+	h.state.config.Narrate = data.Narrate
 
 	str, _ := json.MarshalIndent(h.state.config, "", "  ")
 	ui.Debug(string(str))
@@ -108,6 +110,21 @@ func eventHandler(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *HttpServer) Close() {
+func speakHandler(c *gin.Context) {
+	sentence, ok := c.GetQuery("sentence")
+	if !ok {
+		ui.Error("sentence not ok")
+		return
+	}
 
+	err := speak(sentence, instance.state)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	} else {
+		c.Status(http.StatusNoContent)
+	}
+}
+
+func (h *HttpServer) Close() {
+	ui.Debug("close for http is not supported")
 }

@@ -6,8 +6,8 @@ type mixer struct {
 	sequencers []sequencer
 }
 
-func NewBeepMixer() mixer {
-	return mixer{}
+func NewBeepMixer() *mixer {
+	return &mixer{}
 }
 
 // Add adds Streamers to the Mixer.

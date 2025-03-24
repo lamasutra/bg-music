@@ -124,7 +124,7 @@ func (m *tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tickMsg:
 		// str, _ := m.inputView.renderer.Render()
 		// @todo optimize
-		m.inputView.vp.SetContent(renderInputData(m.inputView.data))
+		m.inputView.vp.SetContent(renderInputData(&m.inputView.data))
 
 		str, _ := m.logsView.renderer.Render(strings.Join(m.log, "\r\n\r\n"))
 		m.logsView.vp.SetContent(str)
@@ -199,25 +199,26 @@ func (m *tuiModel) Error(args ...any) {
 	m.Debug(newArgs...)
 }
 
-func (m *tuiModel) Input(in types.WtInput) {
-	m.inputView.data = in
+func (m *tuiModel) Input(in *types.WtInput) {
+	m.inputView.data = *in
 }
 
-func renderInputData(in types.WtInput) string {
+func renderInputData(in *types.WtInput) string {
 	return fmt.Sprintf(
-		"  Game running: %s Map loaded: %s Mission started: %s Mission ended: %s\r\n"+
+		"  Game running: %s Map loaded: %s Mode: %s Mission started: %s Mission ended: %s\r\n"+
 			"  Player: type %s vehicle: %s landed: %s dead: %s\r\n"+
 			"  Enemies: last kill %d, air close: %s battle %s, ground close: %s, battle %s, nearest air %s, nearest ground: %s\r\n"+
 			"  Map: not implemented yet",
 		btyn(in.GameRunning),
 		btyn(in.MapLoaded),
+		in.GameMode,
 		btyn(in.MissionStarted),
 		btyn(in.MissionEnded),
 		in.PlayerType,
 		in.PlayerVehicle,
 		btyn(in.PlayerLanded),
 		btyn(in.PlayerDead),
-		in.LastKillTime,
+		in.LastPlayerMadeKillTime,
 		btyn(in.EnemyAirNear),
 		btyn(in.EnemyAirClose),
 		btyn(in.EnemyGroundNear),

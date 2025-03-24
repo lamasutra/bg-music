@@ -5,7 +5,7 @@ import "github.com/lamasutra/bg-music/wt-client/types"
 type UI interface {
 	Debug(...any)
 	Error(...any)
-	Input(types.WtInput)
+	Input(*types.WtInput)
 }
 
 var state UI
@@ -27,6 +27,6 @@ func Error(args ...any) {
 	state.Error(args...)
 }
 
-func Input(in types.WtInput) {
+func Input(in *types.WtInput) {
 	state.Input(in)
 }

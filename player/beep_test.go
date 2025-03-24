@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/speaker"
 	"github.com/lamasutra/bg-music/model"
 	"github.com/lamasutra/bg-music/ui"
 )
@@ -108,27 +110,41 @@ var awacs1 = model.Speech{
 func TestCrossfade(t *testing.T) {
 	t.Log("testing crossfade")
 
+	return
+
 	ui.CreateUI("cli")
+
+	format := beep.Format{SampleRate: 44100, NumChannels: 2, Precision: 2}
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	crossfadeNum := format.SampleRate.N(time.Second)
+
 	streamer1, _, _ := openFile(getMusicPath(&music, &conf))
 	streamer2, _, _ := openFile(getMusicPath(&music2, &conf))
 
-	streamer1.Seek(10000)
-	streamer2.Seek(10000)
-	// crossfaded := crossfade(streamer1, streamer2, 1)
+	streamer1.Seek(1024)
+	streamer2.Seek(0)
+	crossfaded := crossfade(streamer1, streamer2, crossfadeNum)
+	speaker.Play(crossfaded)
 
-	samples := make([][2]float64, 512)
+	// samples := make([][2]float64, 512)
 
 	// crossfaded.Stream(samples)
 
-	ui.Debug(samples)
+	// streamer1.Stream(samples)
+	// ui.Debug(samples)
 
-	streamer1.Stream(samples)
-	ui.Debug(samples)
+	// streamer1.Stream(samples)
+	// ui.Debug(samples)
+	for {
+		time.Sleep(time.Second)
+	}
 }
 
 func TestSpeech(t *testing.T) {
 	t.Log("testing speech")
 	return
+	// return
 	// event := model.Event{
 	// 	Volume: 100,
 	// }

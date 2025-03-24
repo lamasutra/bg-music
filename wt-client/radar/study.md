@@ -315,3 +315,95 @@ However, this provides the foundation to understand and implement it.
 Each of the methods above can be used to track multiple targets based on radar measurements in 2D space. The **nearest neighbor** approach is simplest, while **Kalman filtering** can better handle target motion over time. **MHT** is a more complex but flexible approach, while the **Hungarian algorithm** is ideal for scenarios with a clear one-to-one correspondence between measurements and targets.
 
 In real-world applications, you might combine these methods with other techniques, such as **probabilistic data association** or **track-before-detect**, to handle noise and more complex situations.
+
+# -----------------------
+# Simple solution for now
+# -----------------------
+
+## Q: imagine I am a plane have x y cooridinates and dx dy vector for heading
+enemy planes have this coordinates too
+how can I check if something is in front of me, behind on left side or behind right side ?
+
+To determine if an enemy plane is in front of, behind, or to the left or right of you, given your plane's position (x, y) and heading vector (dx, dy), you can use the following approach:
+
+### 1. **Define Your Plane's Heading Vector:**
+   Your plane has a heading vector (dx, dy). This vector represents the direction you're facing. For example, if you're moving east, dx would be positive, and dy would be 0.
+
+### 2. **Calculate Relative Position of the Enemy:**
+   Let the enemy plane have coordinates (ex, ey). To determine if the enemy is in front of, behind, or to the left/right, you need to calculate the relative position of the enemy to your plane's heading.
+
+### 3. **Cross Product for Left/Right Determination:**
+   To determine if the enemy is to your left or right, you can use the 2D cross product between your heading vector (dx, dy) and the vector from your plane to the enemy plane. The vector from your plane to the enemy is `(ex - x, ey - y)`.
+
+   - **Cross product formula:**  
+     \[
+     \text{cross} = dx \cdot (ey - y) - dy \cdot (ex - x)
+     \]
+     
+     - If the cross product is positive, the enemy is **to the left**.
+     - If the cross product is negative, the enemy is **to the right**.
+     - If the cross product is 0, the enemy is **directly ahead or behind**.
+
+### 4. **Dot Product for Front/Behind Determination:**
+   The dot product can tell you if the enemy is in front of or behind you. Calculate the dot product between your heading vector `(dx, dy)` and the vector from your position to the enemy `(ex - x, ey - y)`.
+
+   - **Dot product formula:**
+     \[
+     \text{dot} = dx \cdot (ex - x) + dy \cdot (ey - y)
+     \]
+
+     - If the dot product is **positive**, the enemy is **in front of you**.
+     - If the dot product is **negative**, the enemy is **behind you**.
+     - If the dot product is **zero**, the enemy is **directly to the side** (neither in front nor behind).
+
+### 5. **Putting It Together:**
+   To summarize, you can determine the position of the enemy relative to your plane using:
+   
+   - **Cross product** (for left/right):
+     - Positive → Left
+     - Negative → Right
+     - Zero → Directly ahead or behind
+   - **Dot product** (for front/behind):
+     - Positive → In front
+     - Negative → Behind
+     - Zero → Perpendicular to your direction (sideways)
+
+### Example Code:
+
+```python
+def relative_position(x, y, dx, dy, ex, ey):
+    # Vector from your plane to the enemy
+    vec_to_enemy = (ex - x, ey - y)
+    
+    # Cross product to determine left/right
+    cross_product = dx * vec_to_enemy[1] - dy * vec_to_enemy[0]
+    
+    # Dot product to determine front/behind
+    dot_product = dx * vec_to_enemy[0] + dy * vec_to_enemy[1]
+    
+    if cross_product > 0:
+        side = 'Left'
+    elif cross_product < 0:
+        side = 'Right'
+    else:
+        side = 'Straight'
+    
+    if dot_product > 0:
+        position = 'In front'
+    elif dot_product < 0:
+        position = 'Behind'
+    else:
+        position = 'Perpendicular'
+    
+    return position, side
+
+# Example usage
+x, y, dx, dy = 0, 0, 1, 0  # Your plane's position and heading (facing east)
+ex, ey = 5, 2  # Enemy plane's position
+
+position, side = relative_position(x, y, dx, dy, ex, ey)
+print(f"The enemy is {position} and {side}.")
+```
+
+### Output:
+This code will output whether the enemy is in front of or behind you, and whether they are on the left or right side.

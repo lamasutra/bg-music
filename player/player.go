@@ -17,7 +17,7 @@ func CreatePlayer(playerType string) *model.Player {
 				NumChannels: 2,
 				Precision:   2,
 			},
-			sequencers: sequencers{
+			sequencers: &sequencers{
 				music:    NewBeepSequencer(8),
 				sfx:      NewBeepSequencer(8),
 				narrator: NewBeepSequencer(32),

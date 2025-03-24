@@ -7,8 +7,9 @@ type Request struct {
 }
 
 type LoadData struct {
-	Events map[string]model.Event `json:"events"`
-	States map[string]model.State `json:"states"`
+	Events  map[string]model.Event  `json:"events"`
+	States  map[string]model.State  `json:"states"`
+	Narrate map[string]model.Speech `json:"narrate"`
 }
 
 type LoadRequest struct {

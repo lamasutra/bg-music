@@ -19,7 +19,7 @@ import (
 // }
 
 func TestMixer(t *testing.T) {
-	return
+	// return
 	ui.CreateUI("cli")
 	// CreatePlayer("beep")
 
@@ -38,7 +38,7 @@ func TestMixer(t *testing.T) {
 	x := NewBeepSequencer(10)
 	file, _ := os.Open("../music/crusader/1/01 Track1.mp3")
 	streamer, format, _ := mp3.Decode(file)
-	s.Append(streamer)
+	s.Append(&streamer)
 
 	// hostiles := model.Speech{
 	// 	Sfx: model.Sfx{

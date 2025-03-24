@@ -146,7 +146,7 @@
             "PlayerDead": false,
             "EnemyAirNear": true,
             "EnemyAirClose": true,
-            "AirBattle": false
+            "AirBattle": true
         },
         "conditions_bool_disabled": {
             "EnemyGroundNear": false,
@@ -173,7 +173,44 @@
             "EnemyAirNear": false,
             "EnemyAirClose": false,
             "EnemyGroundNear": true,
-            "EnemyGroundClose": true
+            "EnemyGroundClose": true,
+            "AirBattle": false
+        }
+    },
+    "damaged": {
+        "states": [
+            "landed",
+            "severely_damaged",
+            "death",
+            "success",
+            "failure"
+        ],
+        "conditions_bool": {
+            "GameRunning": true,
+            "MapLoaded": true,
+            "MissionEnded": false,
+            "PlayerLanded": false,
+            "PlayerDead": false,
+            "PlayerDamaged": true,
+            "PlayerSeverelyDamaged": false
+        }
+    },
+    "severely_damaged": {
+        "states": [
+            "landed",
+            "severely_damaged",
+            "death",
+            "success",
+            "failure"
+        ],
+        "conditions_bool": {
+            "GameRunning": true,
+            "MapLoaded": true,
+            "MissionEnded": false,
+            "PlayerLanded": false,
+            "PlayerDead": false,
+            "PlayerDamaged": true,
+            "PlayerSeverelyDamaged": true
         }
     },
     "clear": {
@@ -195,7 +232,8 @@
             "EnemyAirNear": false,
             "EnemyAirClose": false,
             "EnemyGroundNear": false,
-            "EnemyGroundClose": false
+            "EnemyGroundClose": false,
+            "AirBattle": false
         }
     },
     "death": {

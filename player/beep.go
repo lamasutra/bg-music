@@ -17,33 +17,33 @@ import (
 	"github.com/lamasutra/bg-music/ui"
 )
 
-func NewVerboseStreamer(streamer beep.Streamer) verboseStream {
-	return verboseStream{
-		streamer,
-	}
-}
+// func NewVerboseStreamer(streamer beep.Streamer) verboseStream {
+// 	return verboseStream{
+// 		streamer,
+// 	}
+// }
 
-type verboseStream struct {
-	streamer beep.Streamer
-}
+// type verboseStream struct {
+// 	streamer beep.Streamer
+// }
 
-func (v verboseStream) Stream(samples [][2]float64) (n int, ok bool) {
-	n, ok = v.streamer.Stream(samples)
+// func (v verboseStream) Stream(samples [][2]float64) (n int, ok bool) {
+// 	n, ok = v.streamer.Stream(samples)
 
-	fmt.Println("DEBUG: streaming", len(samples), n, ok)
-	fmt.Println(samples)
+// 	fmt.Println("DEBUG: streaming", len(samples), n, ok)
+// 	fmt.Println(samples)
 
-	return n, ok
-}
+// 	return n, ok
+// }
 
-func (v verboseStream) Err() error {
-	return v.streamer.Err()
-}
+// func (v verboseStream) Err() error {
+// 	return v.streamer.Err()
+// }
 
 type sequencers struct {
-	music    sequencer
-	sfx      sequencer
-	narrator sequencer
+	music    *sequencer
+	sfx      *sequencer
+	narrator *sequencer
 }
 
 type beepState struct {
@@ -51,11 +51,11 @@ type beepState struct {
 
 	currentMusic  *model.Music
 	volumePercent uint8
-	volumed       effects.Volume
-	musicStreamer beep.StreamSeekCloser
-	sfxStreamer   beep.StreamSeekCloser
-	mixer         beep.Streamer // wrapped by volumeEffect
-	sequencers    sequencers
+	volumed       *effects.Volume
+	musicStreamer *beep.StreamSeekCloser
+	sfxStreamer   *beep.StreamSeekCloser
+	mixer         *beep.Streamer // wrapped by volumeEffect
+	sequencers    *sequencers
 	format        beep.Format
 	sampleRate    beep.SampleRate
 	crossfadeNum  int
@@ -113,17 +113,17 @@ func openFile(path string) (beep.StreamSeekCloser, beep.Format, error) {
 	return nil, beep.Format{}, fmt.Errorf("cannot decode file type %v", ext)
 }
 
-func (p *beepState) playMusic(streamer beep.Streamer) {
+func (p *beepState) playMusic(streamer *beep.Streamer) {
 	fmt.Printf("appending music %p\n", streamer)
 	p.sequencers.music.Append(streamer)
 }
 
-func (p *beepState) playSfx(streamer beep.Streamer) {
+func (p *beepState) playSfx(streamer *beep.Streamer) {
 	fmt.Println("appending sfx")
 	p.sequencers.sfx.Append(streamer)
 }
 
-func (p *beepState) playSpeech(streamer beep.Streamer) {
+func (p *beepState) playSpeech(streamer *beep.Streamer) {
 	fmt.Println("appending speech")
 	p.sequencers.narrator.Append(streamer)
 }
@@ -173,13 +173,18 @@ func (p *beepState) PlayMusicAtVolume(music *model.Music, c *model.Config, volum
 
 	var volumed effects.Volume
 	if p.musicStreamer == nil {
-		volumed = wrapSimpleStreamerByVolumeEffect(streamer)
-		setVolume(volumed, volume)
+		stream, ok := streamer.(beep.Streamer)
+		if !ok {
+			panic("invalid streamer type")
+		}
+		volumed = wrapSimpleStreamerByVolumeEffect(&stream)
+		setVolume(&volumed, volume)
 	} else {
-		volumed = p.crossfadeCurrent(streamer, volume)
+		volumed = p.crossfadeCurrent(&streamer, volume)
 	}
-	p.playMusic(&volumed)
-	p.musicStreamer = streamer
+
+	p.sequencers.music.Append(volumed)
+	p.musicStreamer = &streamer
 
 	ui.Debug(fmt.Sprintf("playing music %v, duration: %vs", path, streamer.Len()/int(format.SampleRate)))
 	ui.SetCurrentMusicTitle(path)
@@ -200,12 +205,12 @@ func (p *beepState) GetCurrentMusicProgress() float64 {
 		ui.Error("cm is nil")
 		return 0.0
 	}
-	if p.musicStreamer.Len() == 0 {
+	if (*p.musicStreamer).Len() == 0 {
 		ui.Error("cm is empty")
 		return 0.0
 	}
 
-	return float64(p.musicStreamer.Position()) / float64(p.musicStreamer.Len())
+	return float64((*p.musicStreamer).Position()) / float64((*p.musicStreamer).Len())
 }
 
 func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekCloser, error) {
@@ -216,12 +221,12 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekClo
 		return nil, err
 	}
 
-	p.sfxStreamer = streamer
+	p.sfxStreamer = &streamer
 
 	ui.Debug(sfx)
 
-	volumeSfxStreamer := wrapStreamerByVolumeEffect(streamer)
-	setVolume(volumeSfxStreamer, sfx.Volume)
+	volumeSfxStreamer := wrapStreamerByVolumeEffect(&streamer)
+	setVolume(&volumeSfxStreamer, sfx.Volume)
 
 	var preparedStreamer beep.Streamer
 
@@ -231,7 +236,7 @@ func (p *beepState) PlaySfx(sfx *model.Sfx, c *model.Config) (beep.StreamSeekClo
 		preparedStreamer = &volumeSfxStreamer
 	}
 
-	p.playSfx(preparedStreamer)
+	p.playSfx(&preparedStreamer)
 
 	ui.Debug("playing sfx ", path, sfx.Volume)
 
@@ -249,8 +254,9 @@ func (p *beepState) Speak(sentence *[]model.Speech, c *model.Config) {
 			ui.Error(speech.Meaning, "cannot prepare speech", err)
 			continue
 		}
-		streamer = wrapSimpleStreamerByVolumeEffect(speech.Resample(p.sampleRate))
-		setVolume(streamer, speech.Volume)
+		resampler := speech.Resample(p.sampleRate)
+		streamer = wrapResamplerByVolumeEffect(resampler)
+		setVolume(&streamer, speech.Volume)
 		speechCache[speech.Meaning] = streamer
 		p.sequencers.narrator.Append(&streamer)
 	}
@@ -263,13 +269,14 @@ func (p *beepState) Play(s beep.Streamer) {
 func (p *beepState) Init() {
 	p.musicEnded = make(chan bool)
 	// p.mixer = NewBeepMixer()
-	p.mixer = beep.Mix(
-		&p.sequencers.music,
-		&p.sequencers.sfx,
-		&p.sequencers.narrator,
-	)
-
-	p.volumed = wrapSimpleStreamerByVolumeEffect(p.mixer)
+	// p.mixer = beep.Mix(
+	// 	(*p.sequencers).music,
+	// 	(*p.sequencers).sfx,
+	// 	(*p.sequencers).narrator,
+	// )
+	p.crossfadeNum = p.format.SampleRate.N(time.Second) / 2
+	wrapped := wrapSimpleStreamerByVolumeEffect(p.mixer)
+	p.volumed = &wrapped
 	setVolume(p.volumed, 100)
 
 	err := speaker.Init(p.format.SampleRate, p.format.SampleRate.N(time.Second/10))
@@ -279,14 +286,14 @@ func (p *beepState) Init() {
 
 	ui.Debug(fmt.Sprintf("beep player initialized, seqs: music=%p sfx=%p narrator=%p", &p.sequencers.music, &p.sequencers.sfx, &p.sequencers.narrator))
 	p.sampleRate = p.format.SampleRate
-	speaker.Play(&p.volumed)
+	speaker.Play(p.volumed)
 	// speaker.Play(p.mixer)
 	p.initialized = true
 	go p.watchMusicStream()
 }
 
 func (p *beepState) Close() {
-	p.musicStreamer.Close()
+	(*p.musicStreamer).Close()
 	// p.sfxStreamer.Close()
 	// p.mixer.Clear()
 
@@ -316,7 +323,7 @@ func (p *beepState) watchMusicStream() {
 			return
 		default:
 			// ui.
-			if (p.musicStreamer.Position() + p.crossfadeNum) >= p.musicStreamer.Len() {
+			if ((*p.musicStreamer).Position() + p.crossfadeNum) >= (*p.musicStreamer).Len() {
 				ui.Debug("music", p.currentMusic.Path, "ending", "mem", &p.currentMusic)
 				p.musicEnded <- true
 			}
@@ -327,7 +334,23 @@ func (p *beepState) watchMusicStream() {
 	}
 }
 
-func wrapStreamerByVolumeEffect(streamer beep.StreamSeekCloser) effects.Volume {
+func wrapStreamerByVolumeEffect(streamer *beep.StreamSeekCloser) effects.Volume {
+	return effects.Volume{
+		Base:     2,
+		Silent:   false,
+		Streamer: *streamer,
+	}
+}
+
+func wrapSimpleStreamerByVolumeEffect(streamer *beep.Streamer) effects.Volume {
+	return effects.Volume{
+		Base:     2,
+		Silent:   false,
+		Streamer: *streamer,
+	}
+}
+
+func wrapResamplerByVolumeEffect(streamer *beep.Resampler) effects.Volume {
 	return effects.Volume{
 		Base:     2,
 		Silent:   false,
@@ -335,15 +358,7 @@ func wrapStreamerByVolumeEffect(streamer beep.StreamSeekCloser) effects.Volume {
 	}
 }
 
-func wrapSimpleStreamerByVolumeEffect(streamer beep.Streamer) effects.Volume {
-	return effects.Volume{
-		Base:     2,
-		Silent:   false,
-		Streamer: streamer,
-	}
-}
-
-func setVolume(volumeEffect effects.Volume, volumePercent uint8) effects.Volume {
+func setVolume(volumeEffect *effects.Volume, volumePercent uint8) {
 	if volumePercent == 0 {
 		volumeEffect.Silent = true
 	} else {
@@ -354,24 +369,22 @@ func setVolume(volumeEffect effects.Volume, volumePercent uint8) effects.Volume 
 	}
 
 	ui.SetCurrentVolume(float64(volumePercent) / 100)
-
-	return volumeEffect
 }
 
-func (p *beepState) crossfadeCurrent(streamer beep.StreamSeekCloser, newVolume uint8) effects.Volume {
+func (p *beepState) crossfadeCurrent(streamer *beep.StreamSeekCloser, newVolume uint8) effects.Volume {
 	ui.Debug("crossfading ", p.crossfadeNum)
 	ui.Debug(fmt.Sprintf("current: %p, new: %p", p.musicStreamer, streamer))
-	currentSample := beep.Take(p.crossfadeNum, &p.volumed)
+	currentSample := beep.Take(p.crossfadeNum, p.volumed)
 	newVolumeEffect := wrapStreamerByVolumeEffect(streamer)
-	setVolume(newVolumeEffect, newVolume)
+	setVolume(&newVolumeEffect, newVolume)
 	newSample := beep.Take(p.crossfadeNum, &newVolumeEffect)
-	mixed := crossfade(currentSample, newSample, p.crossfadeNum)
+	mixed := crossfade(&currentSample, &newSample, p.crossfadeNum)
 
-	p.sequencers.music.Append(mixed)
-	p.sequencers.music.Append(&newVolumeEffect)
+	(*p.sequencers.music).Append(&mixed)
+	(*p.sequencers.music).Append(newVolumeEffect)
 
-	p.musicStreamer.Seek(p.musicStreamer.Len())
-	streamer.Seek(p.crossfadeNum)
+	(*p.musicStreamer).Seek((*p.musicStreamer).Len())
+	(*streamer).Seek(p.crossfadeNum)
 
 	return newVolumeEffect
 }
@@ -386,9 +399,9 @@ func (p *beepState) crossfadeCurrent(streamer beep.StreamSeekCloser, newVolume u
 // 	return streamer
 // }
 
-func crossfade(stream1 beep.Streamer, stream2 beep.Streamer, length int) beep.Streamer {
-	trans1 := effects.Transition(stream1, length, 1.0, 0.0, effects.TransitionEqualPower)
-	trans2 := effects.Transition(stream2, length, 0.0, 1.0, effects.TransitionEqualPower)
+func crossfade(stream1 *beep.Streamer, stream2 *beep.Streamer, length int) beep.Streamer {
+	trans1 := effects.Transition(*stream1, length, 1.0, 0.0, effects.TransitionEqualPower)
+	trans2 := effects.Transition(*stream2, length, 0.0, 1.0, effects.TransitionEqualPower)
 	mixed := beep.Take(length, beep.Mix(trans1, trans2))
 
 	return mixed

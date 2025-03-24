@@ -4,9 +4,10 @@ import "github.com/lamasutra/bg-music/wt-client/model"
 
 type BgPlayer interface {
 	Init(*model.Config)
-	SendEventStates(*model.EventStates) error
+	SendEventStates(*model.BgPlayerConfig) error
 	TriggerEvent(string) error
 	SendState(string) error
+	Speak(string) error
 	Close()
 }
 

@@ -2,6 +2,8 @@ package server
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/lamasutra/bg-music/model"
 	"github.com/lamasutra/bg-music/ui"
@@ -36,17 +38,51 @@ func triggerEvent(event string, srv *ServerState) error {
 		ui.Error(err)
 		return err
 	}
-	sfx, err := ev.GetRandomSfx()
-	if err != nil {
-		ui.Error(err)
-		return err
+	if len(ev.Sentence) > 0 {
+		sentence, err := ev.GetRandomSentence()
+		if err != nil {
+			ui.Error(err)
+			return err
+		}
+
+		err = speak(sentence, srv)
+		if err != nil {
+			ui.Error(err)
+			return err
+		}
+
+	} else {
+		sfx, err := ev.GetRandomSfx()
+		if err != nil {
+			ui.Error(err)
+			return err
+		}
+
+		_, err = (*srv.player).PlaySfx(sfx, srv.config)
+		if err != nil {
+			ui.Error(err)
+			return err
+		}
 	}
 
-	_, err = (*srv.player).PlaySfx(sfx, srv.config)
-	if err != nil {
-		ui.Error(err)
-		return err
+	return nil
+}
+
+func speak(sentence string, srv *ServerState) error {
+	seq := strings.Split(sentence, ",")
+	ui.Debug(fmt.Sprintf("I will speak %s for you", sentence))
+	narSeq := make([]model.Speech, len(seq))
+	for i, key := range seq {
+		val, ok := srv.config.Narrate[key]
+		if !ok {
+			return fmt.Errorf("narrate %s not defined in config", key)
+		}
+		narSeq[i] = val
 	}
+
+	// ui.Debug("almost")
+
+	(*srv.player).Speak(&narSeq, srv.config)
 
 	return nil
 }

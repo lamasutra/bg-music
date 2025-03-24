@@ -4,13 +4,13 @@
     "bg_player_type": "http",
     "bg_player_host": "http://localhost:8211/",
     "colors": {
-        "enemy": {
-            "air": ["#f00c00", "#fa0c00"],
-            "ground": ["#fa0c00"]
-        },
         "friendly": {
             "air": ["#174dff","#39d921"],
             "ground": ["#043fff"]
+        },
+        "foe": {
+            "air": ["#f00c00", "#fa0c00"],
+            "ground": ["#fa0c00"]
         }
     },
     "themes": {
@@ -27,38 +27,89 @@
                 }
             },
             "events": {
+                "permitEngage": {
+                    "volume": 100,
+                    "sfx": [],
+                    "sentence": [
+                        "awacs confirms inbound hostiles you have permission to fire",
+                        "awacs gives you permission to engage"
+                    ]
+                },
                 "bandits": {
                     "volume": 100,
-                    "sfx": [
-                        {"path": "sfx/tfx/bandits-bandits-break.flac"}
+                    "sfx": [],
+                    "sentence": [
+                        "bandits bandits break"
+                    ]
+                },
+                "break_left": {
+                    "volume": 100,
+                    "sfx": [],
+                    "sentence": [
+                        "break left"
+                    ]
+                },
+                "break_right": {
+                    "volume": 100,
+                    "sfx": [],
+                    "sentence": [
+                        "break right"
                     ]
                 },
                 "airKill": {
                     "volume": 80,
-                    "sfx": [
-                        {
-                            "volume": 50,
-                            "path": "sfx/tfx/kill.flac"
-                        },
-                        {"path": "sfx/tfx/toasted-bogie.flac"},
-                        {"path": "sfx/tfx/good-shot.flac"}
-                    ]
+                    "sentence": [
+                        "kill",
+                        "toasted bogie",
+                        "good shot"
+                    ],
+                    "sfx": []
                 },
                 "groundKill": {
                     "volume": 80,
-                    "sfx": [
-                        {
-                            "volume": 50,
-                            "path": "sfx/tfx/kill.flac"
-                        },
-                        {"path": "sfx/tfx/good-shot.flac"}
-                    ]
+                    "sentence": [
+                        "kill",
+                        "good shot"
+                    ],
+                    "sfx": []
+                },
+                "damaged": {
+                    "volume": 80,
+                    "sentence": [
+                        "i am hit",
+                        "i am hit,oh no"
+                    ],
+                    "sfx": []
+                },
+                "burning": {
+                    "volume": 80,
+                    "sentence": [
+                        "oh no"
+                    ],
+                    "sfx": []
+                },
+                "severely_damaged": {
+                    "volume": 80,
+                    "sentence": [
+                        "i am hit going down",
+                        "going down",
+                        "mayday",
+                        "i am hit,eject,eject",
+                        "going down,eject,eject"
+                    ],
+                    "sfx": []
+                },
+                "foe_sever_damage": {
+                    "volume": 50,
+                    "sentence": [
+                        "looks like a lizard"
+                    ],
+                    "sfx": []
                 }
             },
             "states": {
                 "idle": {
                     "volume": 50,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "crusader/1/08 Track 8.mp3",
@@ -79,10 +130,9 @@
                 },
                 "start": {
                     "volume": 80,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
-                            "path": "tfx-cd/01 Introduction.flac",
+                            "path": "tfx-sc55/01 Introduction.flac",
                             "skip": 0,
                             "endBefore": 0
                         }
@@ -100,7 +150,6 @@
                 },
                 "landed": {
                     "volume": 100,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/02 Enrol.flac",
@@ -141,7 +190,6 @@
                 },
                 "danger_air": {
                     "volume": 80,
-                    "cooldown": 0,
                     "music": [
                         {
                             "path": "tfx-sc55/09 Defence Suppression.flac",
@@ -162,7 +210,6 @@
                 },
                 "danger_ground": {
                     "volume": 80,
-                    "cooldown": 0,
                     "music": [
                         {
                             "path": "tfx-sc55/10 Anti Armour.flac",
@@ -183,7 +230,6 @@
                 },
                 "battle_air": {
                     "volume": 100,
-                    "cooldown": 15,
                     "music": [
                         {
                             "path": "tfx-sc55/16 Battle.flac",
@@ -193,8 +239,7 @@
                     ]
                 },
                 "battle_ground": {
-                    "volume": 100,
-                    "cooldown": 7,
+                    "volume": 80,
                     "music": [
                         {
                             "path": "tfx-sc55/17 Sea Battle.flac",
@@ -207,6 +252,22 @@
                             "endBefore": 0
                         }
                     ]
+                },
+                "damaged": {
+                    "volume": 80,
+                    "music": [{
+                        "path": "tfx-sc55/20 Jingle 2.flac",
+                        "skip": 0,
+                        "endBefore": 0
+                    }]
+                },
+                "severely_damaged": {
+                    "volume": 80,
+                    "music": [{
+                        "path": "tfx-sc55/21 Jingle 3.flac",
+                        "skip": 0,
+                        "endBefore": 0
+                    }]
                 },
                 "clear": {
                     "volume": 80,
@@ -225,7 +286,6 @@
                 },
                 "death": {
                     "volume": 80,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/27 Death.flac",
@@ -236,7 +296,6 @@
                 },
                 "success": {
                     "volume": 80,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-sc55/28 Successful Flying.flac",
@@ -247,7 +306,6 @@
                 },
                 "failure": {
                     "volume": 80,
-                    "breaks_cooldown": 1,
                     "music": [
                         {
                             "path": "tfx-adlib/26 Unsuccessful Flying.flac",
@@ -255,6 +313,365 @@
                             "endBefore": 0
                         }
                     ]
+                }
+            },
+            "narrate": {
+                "0": {
+                    "volume": 80,
+                    "path" : "speech/tfx/0.sam",
+                    "meaning": "0",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "1": {
+                    "volume": 80,
+                    "path" : "speech/tfx/1.sam",
+                    "meaning": "1",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "2": {
+                    "volume": 80,
+                    "path" : "speech/tfx/2.sam",
+                    "meaning": "2",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "3": {
+                    "volume": 80,
+                    "path" : "speech/tfx/3.sam",
+                    "meaning": "3",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "4": {
+                    "volume": 80,
+                    "path" : "speech/tfx/4.sam",
+                    "meaning": "4",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "5": {
+                    "volume": 80,
+                    "path" : "speech/tfx/5.sam",
+                    "meaning": "5",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "6": {
+                    "volume": 80,
+                    "path" : "speech/tfx/6.sam",
+                    "meaning": "6",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "7": {
+                    "volume": 80,
+                    "path" : "speech/tfx/7.sam",
+                    "meaning": "7",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "8": {
+                    "volume": 80,
+                    "path" : "speech/tfx/8.sam",
+                    "meaning": "8",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "9": {
+                    "volume": 80,
+                    "path" : "speech/tfx/9.sam",
+                    "meaning": "9",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "10": {
+                    "volume": 80,
+                    "path" : "speech/tfx/10.sam",
+                    "meaning": "10",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "11": {
+                    "volume": 80,
+                    "path" : "speech/tfx/11.sam",
+                    "meaning": "11",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "12": {
+                    "volume": 80,
+                    "path" : "speech/tfx/12.sam",
+                    "meaning": "12",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "13": {
+                    "volume": 80,
+                    "path" : "speech/tfx/13.sam",
+                    "meaning": "13",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "14": {
+                    "volume": 80,
+                    "path" : "speech/tfx/14.sam",
+                    "meaning": "14",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "15": {
+                    "volume": 80,
+                    "path" : "speech/tfx/15.sam",
+                    "meaning": "15",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "16": {
+                    "volume": 80,
+                    "path" : "speech/tfx/16.sam",
+                    "meaning": "16",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "17": {
+                    "volume": 80,
+                    "path" : "speech/tfx/17.sam",
+                    "meaning": "17",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "18": {
+                    "volume": 80,
+                    "path" : "speech/tfx/18.sam",
+                    "meaning": "18",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "19": {
+                    "volume": 80,
+                    "path" : "speech/tfx/19.sam",
+                    "meaning": "19",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "20": {
+                    "volume": 80,
+                    "path" : "speech/tfx/20.sam",
+                    "meaning": "20",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "30": {
+                    "volume": 80,
+                    "path" : "speech/tfx/30.sam",
+                    "meaning": "30",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "40": {
+                    "volume": 80,
+                    "path" : "speech/tfx/40.sam",
+                    "meaning": "40",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "50": {
+                    "volume": 80,
+                    "path" : "speech/tfx/50.sam",
+                    "meaning": "50",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "60": {
+                    "volume": 80,
+                    "path" : "speech/tfx/60.sam",
+                    "meaning": "60",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "70": {
+                    "volume": 80,
+                    "path" : "speech/tfx/70.sam",
+                    "meaning": "70",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "80": {
+                    "volume": 80,
+                    "path" : "speech/tfx/80.sam",
+                    "meaning": "80",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "90": {
+                    "volume": 80,
+                    "path" : "speech/tfx/90.sam",
+                    "meaning": "90",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "100": {
+                    "volume": 80,
+                    "path" : "speech/tfx/100.sam",
+                    "meaning": "100",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "awacs confirms inbound hostiles you have permission to fire": {
+                    "volume": 70,
+                    "path" : "speech/tfx/awacs_confirms_inbound_hostiles_you_have_permission_to_fire.sam",
+                    "meaning": "awacs confirms inbound hostiles you have permission to fire",
+                    "sample_rate": 8000,
+                    "skip": [2, 2]
+                },
+                "awacs gives you permission to engage": {
+                    "volume": 70,
+                    "path" : "speech/tfx/awacs_gives_you_permission_to_engage.sam",
+                    "meaning": "awacs gives you permission to engage",
+                    "sample_rate": 8000,
+                    "skip": [2, 2]
+                },
+                "bandits bandits break": {
+                    "volume": 80,
+                    "path" : "speech/tfx/bandits_bandits_break.sam",
+                    "meaning": "bandits bandits break",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "hostiles": {
+                    "volume": 80,
+                    "path" : "speech/tfx/hostiles.sam",
+                    "meaning": "hostiles",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "i got bogies all over me": {
+                    "volume": 80,
+                    "path" : "speech/tfx/i_got_bogies_all_over_me.sam",
+                    "meaning": "I got bogies all over me",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "break left": {
+                    "volume": 80,
+                    "path" : "speech/tfx/break_left.sam",
+                    "meaning": "break left",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "break right": {
+                    "volume": 80,
+                    "path" : "speech/tfx/break_right.sam",
+                    "meaning": "break right",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "break": {
+                    "volume": 80,
+                    "path" : "speech/tfx/break.sam",
+                    "meaning": "break",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "degrees": {
+                    "volume": 80,
+                    "path" : "speech/tfx/degrees.sam",
+                    "meaning": "degrees",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "going down": {
+                    "volume": 80,
+                    "path" : "speech/tfx/going_down.sam",
+                    "meaning": "going down",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "i am hit going down": {
+                    "volume": 80,
+                    "path" : "speech/tfx/i_am_hit_going_down.sam",
+                    "meaning": "I am hit, going down",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "i am hit": {
+                    "volume": 80,
+                    "path" : "speech/tfx/iamhit.sam",
+                    "meaning": "I am hit",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "kill": {
+                    "volume": 40,
+                    "path" : "speech/tfx/kill.sam",
+                    "meaning": "kill",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "good shot": {
+                    "volume": 50,
+                    "path" : "speech/tfx/good_shot.sam",
+                    "meaning": "good shot",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "oh no": {
+                    "volume": 80,
+                    "path" : "speech/tfx/oh-no.sam",
+                    "meaning": "Oh no",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "on the way": {
+                    "volume": 80,
+                    "path" : "speech/tfx/on_the_way.sam",
+                    "meaning": "On the way",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "talk to me goose": {
+                    "volume": 80,
+                    "path" : "speech/tfx/talk_to_me_goose.sam",
+                    "meaning": "Talk to me Goose",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "there are all over me do something": {
+                    "volume": 80,
+                    "path" : "speech/tfx/there_are_all_over_me_do_something.sam",
+                    "meaning": "There are all over me, Do something",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "toasted bogie": {
+                    "volume": 80,
+                    "path" : "speech/tfx/toasted_bogie.sam",
+                    "meaning": "Toasted bogie",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "looks like a lizard": {
+                    "volume": 80,
+                    "path" : "speech/tfx/lookslik.sam",
+                    "meaning": "looks like a lizard",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "mayday": {
+                    "volume": 50,
+                    "path" : "speech/tfx/mayday.sam",
+                    "meaning": "mayday",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
+                },
+                "eject": {
+                    "volume": 80,
+                    "path" : "speech/tfx/eject.sam",
+                    "meaning": "eject",
+                    "sample_rate": 8000,
+                    "skip": [2, 0]
                 }
             }
         },
@@ -457,6 +874,9 @@
             "theme": "tfx-adlib"
         },
         "f_20a": {
+            "theme": "tfx-adlib"
+        },
+        "fa_18c_late": {
             "theme": "tfx-adlib"
         }
     }

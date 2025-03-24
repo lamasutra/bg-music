@@ -1,8 +1,9 @@
 package model
 
 type Event struct {
-	Volume int   `json:"volume"`
-	Sfx    []Sfx `json:"sfx"`
+	Volume   int      `json:"volume"`
+	Sfx      []Sfx    `json:"sfx"`
+	Sentence []string `json:"sentence"`
 }
 
 func (e *Event) merge(ev Event) Event {
@@ -17,6 +18,11 @@ func (e *Event) merge(ev Event) Event {
 		dest.Sfx = ev.Sfx
 	} else {
 		dest.Sfx = e.Sfx
+	}
+	if len(ev.Sentence) > 0 {
+		dest.Sentence = ev.Sentence
+	} else {
+		dest.Sentence = e.Sentence
 	}
 
 	return dest

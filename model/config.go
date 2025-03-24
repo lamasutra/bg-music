@@ -6,12 +6,13 @@ import (
 )
 
 type Config struct {
-	PlayerType string           `json:"player_type"`
-	ServerType string           `json:"server_type"`
-	Volume     uint8            `json:"volume"`
-	Path       string           `json:"path"`
-	Events     map[string]Event `json:"events"`
-	States     map[string]State `json:"states"`
+	PlayerType string            `json:"player_type"`
+	ServerType string            `json:"server_type"`
+	Volume     uint8             `json:"volume"`
+	Path       string            `json:"path"`
+	Events     map[string]Event  `json:"events"`
+	States     map[string]State  `json:"states"`
+	Narrate    map[string]Speech `json:"narrate"`
 }
 
 func (c *Config) Read(path string) error {

@@ -9,7 +9,10 @@ import (
 var mergedThemesCache map[string]*Theme = make(map[string]*Theme)
 
 type Sfx struct {
-	Path string `json:"path"`
+	Path        string `json:"path"`
+	SampleRate  int64  `json:"sample_rate"`
+	NumChannels int    `json:"num_channels"`
+	Volume      uint8  `json:"volume"`
 }
 
 type Map struct {
@@ -34,14 +37,14 @@ type Config struct {
 	Vehicles     map[string]Vehicle `json:"vehicles"`
 	StateRules   StateRules         `json:"state_rules"`
 	Colors       struct {
-		Enemy struct {
-			Air    []string `json:"air"`
-			Ground []string `json:"ground"`
-		} `json:"enemy"`
 		Friendly struct {
 			Air    []string `json:"air"`
 			Ground []string `json:"ground"`
 		} `json:"friendly"`
+		Foe struct {
+			Air    []string `json:"air"`
+			Ground []string `json:"ground"`
+		} `json:"foe"`
 	} `json:"colors"`
 }
 
@@ -79,13 +82,13 @@ func (c *Config) getTheme(theme string) *Theme {
 	if !exists {
 		return &Theme{}
 	}
-	fmt.Println("reference", fmt.Sprintf("%p", &found))
+	// fmt.Println("reference", fmt.Sprintf("%p", &found))
 	if found.Extend != "" {
 		extend, exists := c.Themes[found.Extend]
-		fmt.Println("reference extend", fmt.Sprintf("%p", &extend))
+		// fmt.Println("reference extend", fmt.Sprintf("%p", &extend))
 		if exists {
 			found = *extend.merge(found)
-			fmt.Println("reference merge", fmt.Sprintf("%p", &found))
+			// fmt.Println("reference merge", fmt.Sprintf("%p", &found))
 		}
 	}
 
@@ -109,16 +112,16 @@ func (c *Config) GetVehicleForPlayerTypeAndVehicleType(playerType string, vehicl
 }
 
 func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
-	fmt.Println("GetThemeForVehicle", vehicle)
+	// fmt.Println("GetThemeForVehicle", vehicle)
 	cacheKey := vehicle.Title
 	if cacheKey == "" {
 		cacheKey = vehicle.Type
 	}
-	fmt.Println("cache key", cacheKey)
+	// fmt.Println("cache key", cacheKey)
 	theme, ok := mergedThemesCache[cacheKey]
 	if ok {
-		js, _ := json.MarshalIndent(mergedThemesCache[cacheKey], "", "  ")
-		fmt.Println("found in cache", string(js))
+		// js, _ := json.MarshalIndent(mergedThemesCache[cacheKey], "", "  ")
+		// fmt.Println("found in cache", string(js))
 		return theme
 	}
 
@@ -134,8 +137,4 @@ func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
 	// fmt.Println("storing")
 
 	return &vehicleTheme
-}
-
-func getMergedCache() *map[string]*Theme {
-	return &mergedThemesCache
 }

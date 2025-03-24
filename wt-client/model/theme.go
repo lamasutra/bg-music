@@ -1,8 +1,9 @@
 package model
 
-type EventStates struct {
-	Events map[string]Event `json:"events"`
-	States map[string]State `json:"states"`
+type BgPlayerConfig struct {
+	Events  map[string]Event  `json:"events"`
+	States  map[string]State  `json:"states"`
+	Narrate map[string]Speech `json:"narrate"`
 }
 
 type ObjDistance struct {
@@ -16,11 +17,12 @@ type Distances struct {
 }
 
 type Theme struct {
-	Title     string           `json:"title"`
-	Events    map[string]Event `json:"events"`
-	States    map[string]State `json:"states"`
-	Distances Distances        `json:"distances"`
-	Extend    string           `json:"extend"`
+	Title     string            `json:"title"`
+	Events    map[string]Event  `json:"events"`
+	States    map[string]State  `json:"states"`
+	Narrate   map[string]Speech `json:"narrate"`
+	Distances Distances         `json:"distances"`
+	Extend    string            `json:"extend"`
 }
 
 func (d *Distances) merge(with Distances) *Distances {
@@ -87,6 +89,25 @@ func (t *Theme) mergeStates(states map[string]State) map[string]State {
 	return merged
 }
 
+func (t *Theme) mergeNarrates(narrates map[string]Speech) map[string]Speech {
+	var merged map[string]Speech = make(map[string]Speech)
+
+	for nKey, speech := range t.Narrate {
+		merged[nKey] = speech
+	}
+
+	for nKey, speech := range narrates {
+		destNarrate, exists := merged[nKey]
+		if exists {
+			merged[nKey] = destNarrate.merge(speech)
+		} else {
+			merged[nKey] = speech
+		}
+	}
+
+	return merged
+}
+
 func (t *Theme) forceStateVolume(volume int) map[string]State {
 	states := make(map[string]State, len(t.States))
 
@@ -102,6 +123,7 @@ func (t *Theme) merge(with Theme) *Theme {
 	merged := Theme{
 		Events:    t.mergeEvents(with.Events),
 		States:    t.mergeStates(with.States),
+		Narrate:   t.mergeNarrates(with.Narrate),
 		Distances: *t.Distances.merge(with.Distances),
 	}
 

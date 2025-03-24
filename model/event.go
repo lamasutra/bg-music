@@ -7,8 +7,9 @@ import (
 )
 
 type Event struct {
-	Volume int   `json:"volume"`
-	Sfx    []Sfx `json:"sfx"`
+	Volume   int      `json:"volume"`
+	Sfx      []Sfx    `json:"sfx"`
+	Sentence []string `json:"sentence"`
 }
 
 func (e *Event) GetRandomSfx() (*Sfx, error) {
@@ -23,6 +24,18 @@ func (e *Event) GetRandomSfx() (*Sfx, error) {
 	return e.GetSfx(index)
 }
 
+func (e *Event) GetRandomSentence() (string, error) {
+	var index uint8
+	length := len(e.Sentence)
+	if length > 1 {
+		index = uint8(rand.Intn(length))
+		// ui.Debug("random sentence index:", index)
+	} else {
+		index = 0
+	}
+	return e.GetSentence(index)
+}
+
 func (e *Event) GetSfx(index uint8) (*Sfx, error) {
 	if int(index) > len(e.Sfx) {
 		return nil, fmt.Errorf("sfx index %d does not exists", index)
@@ -33,6 +46,15 @@ func (e *Event) GetSfx(index uint8) (*Sfx, error) {
 	}
 
 	return &sfx, nil
+}
+
+func (e *Event) GetSentence(index uint8) (string, error) {
+	if int(index) > len(e.Sentence) {
+		return "", fmt.Errorf("sentence index %d does not exists", index)
+	}
+	sentence := e.Sentence[index]
+
+	return sentence, nil
 }
 
 func (c *Config) GetEvent(event string) (*Event, error) {

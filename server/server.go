@@ -12,11 +12,11 @@ import (
 type ServerState struct {
 	state  string
 	config *model.Config
-	player *model.Player
+	player model.Player
 }
 
 type Server interface {
-	Serve(*model.Config, *model.Player)
+	Serve(*model.Config, model.Player)
 	Close()
 }
 
@@ -58,7 +58,7 @@ func triggerEvent(event string, srv *ServerState) error {
 			return err
 		}
 
-		_, err = (*srv.player).PlaySfx(sfx, srv.config)
+		_, err = srv.player.PlaySfx(sfx, srv.config)
 		if err != nil {
 			ui.Error(err)
 			return err
@@ -82,7 +82,7 @@ func speak(sentence string, srv *ServerState) error {
 
 	// ui.Debug("almost")
 
-	(*srv.player).Speak(&narSeq, srv.config)
+	srv.player.Speak(&narSeq, srv.config)
 
 	return nil
 }
@@ -106,13 +106,13 @@ func changeState(state string, srv *ServerState) error {
 	}
 	if st.Volume != nil {
 		// (*srv.player).SetVolume(uint8(*st.Volume))
-		_, err = (*srv.player).PlayMusicAtVolume(music, srv.config, uint8(*st.Volume))
+		_, err = srv.player.PlayMusicAtVolume(music, srv.config, uint8(*st.Volume))
 		if err != nil {
 			ui.Error(err)
 			return err
 		}
 	} else {
-		_, err = (*srv.player).PlayMusic(music, srv.config)
+		_, err = srv.player.PlayMusic(music, srv.config)
 		if err != nil {
 			ui.Error(err)
 			return err
@@ -129,7 +129,7 @@ func changeMusic(state string, srv *ServerState) error {
 		ui.Error(err)
 		return err
 	}
-	_, err = (*srv.player).PlayMusic(music, srv.config)
+	_, err = srv.player.PlayMusic(music, srv.config)
 
 	return err
 }

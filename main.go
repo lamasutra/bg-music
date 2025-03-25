@@ -45,7 +45,7 @@ func main() {
 
 	mp := player.CreatePlayer(config.PlayerType)
 
-	defer (*mp).Close()
+	defer mp.Close()
 
 	go initServer(config, mp)
 
@@ -54,7 +54,7 @@ func main() {
 	}
 }
 
-func initServer(config *model.Config, mp *model.Player) {
+func initServer(config *model.Config, mp model.Player) {
 	ui.Debug("Running as ", config.PlayerType, " ", config.ServerType)
 
 	server, err := server.CreateServer(config.ServerType)

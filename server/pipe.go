@@ -25,7 +25,7 @@ func NewPipeServer() *PipeServer {
 	return &PipeServer{}
 }
 
-func (p *PipeServer) Serve(conf *model.Config, player *model.Player) {
+func (p *PipeServer) Serve(conf *model.Config, player model.Player) {
 	sleepTime := time.Millisecond * 100
 	p.controlChannel = make(chan string)
 	p.stateChannel = make(chan string)
@@ -38,7 +38,7 @@ func (p *PipeServer) Serve(conf *model.Config, player *model.Player) {
 	// player.CreatePlayer(conf.PlayerType, conf.Volume, &p.musicEndedChannel),
 	p.state = &serverState
 
-	defer (*p.state.player).Close()
+	defer p.state.player.Close()
 
 	go handlePipeFile(p.controlChannel, "control.pipe", sleepTime)
 	go handlePipeFile(p.stateChannel, "state.pipe", sleepTime)
@@ -54,7 +54,7 @@ func (p *PipeServer) Serve(conf *model.Config, player *model.Player) {
 			changeState(state, p.state)
 		case event := <-p.eventChannel:
 			triggerEvent(event, p.state)
-		case <-(*serverState.player).GetMusicEndedChan():
+		case <-serverState.player.GetMusicEndedChan():
 			changeMusic(p.state.state, p.state)
 		default:
 			time.Sleep(sleepTime)

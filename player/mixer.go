@@ -3,15 +3,17 @@ package player
 import "github.com/lamasutra/bg-music/ui"
 
 type mixer struct {
-	sequencers []sequencer
+	sequencers []*sequencer
 }
 
 func NewBeepMixer() *mixer {
-	return &mixer{}
+	return &mixer{
+		sequencers: make([]*sequencer, 1),
+	}
 }
 
 // Add adds Streamers to the Mixer.
-func (m *mixer) Add(s ...sequencer) {
+func (m *mixer) Add(s ...*sequencer) {
 	ui.Debug("mixer appending", s)
 	m.sequencers = append(m.sequencers, s...)
 }

@@ -19,26 +19,24 @@ import (
 // }
 
 func TestMixer(t *testing.T) {
-	// return
+	return
 	ui.CreateUI("cli")
 	// CreatePlayer("beep")
 
 	format := beep.Format{
-		SampleRate:  44100,
-		NumChannels: 2,
-		Precision:   2,
+		SampleRate: 44100,
 	}
 	err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 	if err != nil {
 		panic(err)
 	}
 
-	m := NewBeepMixer()
-	s := NewBeepSequencer(10)
-	x := NewBeepSequencer(10)
+	// m := NewBeepMixer()
+	s := NewBeepSequencer(10, "song")
+	// x := NewBeepSequencer(10)
 	file, _ := os.Open("../music/crusader/1/01 Track1.mp3")
 	streamer, format, _ := mp3.Decode(file)
-	s.Append(&streamer)
+	s.Append(streamer)
 
 	// hostiles := model.Speech{
 	// 	Sfx: model.Sfx{
@@ -54,8 +52,8 @@ func TestMixer(t *testing.T) {
 
 	// s.Append(&hostiles)
 
-	m.Add(s)
-	m.Add(x)
+	speaker.Play(&s)
+	// m.Add(x)
 
 	// samples := make([][2]float64, 512)
 	// n, ok := m.Stream(samples)
@@ -66,7 +64,7 @@ func TestMixer(t *testing.T) {
 	// sentence := []model.Speech{hostiles}
 
 	// (*b).Speak(&sentence, &conf)
-	speaker.Play(&m)
+	// speaker.Play(m)
 	for {
 		time.Sleep(time.Second)
 	}

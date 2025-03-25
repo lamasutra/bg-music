@@ -1,6 +1,7 @@
 package player
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -17,11 +18,14 @@ var conf = model.Config{
 	Path:       "../music",
 }
 
-var music = model.Music{
+var music1 = model.Music{
 	Path: "crusader/2/01 Track 1.mp3",
 }
 var music2 = model.Music{
 	Path: "crusader/2/02 Track 2.mp3",
+}
+var music3 = model.Music{
+	Path: "crusader/2/03 Track 3.mp3",
 }
 
 var sfx = model.Sfx{
@@ -107,6 +111,42 @@ var awacs1 = model.Speech{
 	Meaning: "awacs1",
 }
 
+func TestMusic(t *testing.T) {
+	t.Log("testing music")
+	ui.CreateUI("cli")
+	b := CreatePlayer("beep")
+	b.PlayMusic(&music1, &conf)
+	i := 0
+	for {
+		time.Sleep(time.Second)
+		i++
+		if i == 1 {
+			break
+		}
+	}
+
+	stream, _ := b.PlayMusic(&music2, &conf)
+	for {
+		time.Sleep(time.Second)
+		i++
+		if i == 2 {
+			break
+		}
+	}
+
+	ui.Debug("seek end")
+	stream.Seek(stream.Len())
+	for {
+		time.Sleep(time.Second)
+		i++
+		if i == 3 {
+			break
+		}
+	}
+	ui.Debug("close")
+	b.Close()
+}
+
 func TestCrossfade(t *testing.T) {
 	t.Log("testing crossfade")
 
@@ -114,18 +154,25 @@ func TestCrossfade(t *testing.T) {
 
 	ui.CreateUI("cli")
 
-	format := beep.Format{SampleRate: 44100, NumChannels: 2, Precision: 2}
+	format := beep.Format{SampleRate: 44100}
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 
 	crossfadeNum := format.SampleRate.N(time.Second)
 
-	streamer1, _, _ := openFile(getMusicPath(&music, &conf))
+	streamer1, _, _ := openFile(getMusicPath(&music3, &conf))
 	streamer2, _, _ := openFile(getMusicPath(&music2, &conf))
 
-	streamer1.Seek(1024)
-	streamer2.Seek(0)
-	crossfaded := crossfade(streamer1, streamer2, crossfadeNum)
-	speaker.Play(crossfaded)
+	s := NewBeepSequencer(16, "song")
+	ss := NewBeepSequencer(32, "sfx")
+	s.Append(streamer1)
+	// ss.Append(streamer2)
+
+	m := beep.Mix(&s, &ss)
+
+	// streamer1.Seek(1024)
+	// streamer2.Seek(0)
+	// crossfaded := crossfade(streamer1, streamer2, crossfadeNum)
+	speaker.Play(m)
 
 	// samples := make([][2]float64, 512)
 
@@ -136,8 +183,18 @@ func TestCrossfade(t *testing.T) {
 
 	// streamer1.Stream(samples)
 	// ui.Debug(samples)
+	i := 0
 	for {
+		fmt.Println(i)
 		time.Sleep(time.Second)
+		if i == 5 {
+			crossfaded := crossfade(streamer1, streamer2, crossfadeNum)
+			streamer1.Seek(streamer1.Len())
+			s.Append(crossfaded)
+			streamer2.Seek(crossfadeNum)
+			s.Append(streamer2)
+		}
+		i++
 	}
 }
 
@@ -159,7 +216,7 @@ func TestSpeech(t *testing.T) {
 
 	// sentence := []model.Speech{hostiles, s2, s100, s50, s2, degrees, awacs1}
 
-	_, err := (*b).PlayMusic(&music, &conf)
+	_, err := b.PlayMusic(&music1, &conf)
 	if err != nil {
 		t.Error(err)
 	}
@@ -176,7 +233,7 @@ func TestSpeech(t *testing.T) {
 		time.Sleep(time.Second)
 		i++
 		if i == 3 {
-			(*b).PlayMusic(&music2, &conf)
+			b.PlayMusic(&music2, &conf)
 		}
 	}
 

@@ -73,11 +73,13 @@ func (m *tuiModel) Write(p []byte) (n int, err error) {
 }
 
 func (m *tuiModel) Debug(args ...any) {
-	str := time.Now().Format("15:04:05.000") + " " + fmt.Sprint(args...)
-	if !strings.Contains(str, "\n") {
-		str += "\n"
+	length := len(args) + 1
+	buf := make([]string, length)
+	buf[0] = time.Now().Format("15:04:05.000")
+	for i, val := range args {
+		buf[i+1] = fmt.Sprint(val)
 	}
-	m.log = append(m.log, str)
+	m.log = append(m.log, strings.Join(buf, " "))
 }
 
 func (m *tuiModel) Error(args ...any) {

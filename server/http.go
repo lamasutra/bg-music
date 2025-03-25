@@ -24,7 +24,7 @@ func NewHttpServer() *HttpServer {
 	return instance
 }
 
-func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
+func (h *HttpServer) Serve(conf *model.Config, player model.Player) {
 	sleepTime := time.Millisecond * 100
 	serverState := ServerState{
 		config: conf,
@@ -33,7 +33,7 @@ func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
 	// player.CreatePlayer(conf.PlayerType, conf.Volume, &p.musicEndedChannel),
 	h.state = &serverState
 
-	defer (*h.state.player).Close()
+	defer h.state.player.Close()
 
 	changeState("idle", h.state)
 
@@ -48,9 +48,11 @@ func (h *HttpServer) Serve(conf *model.Config, player *model.Player) {
 
 	go polishAladinsLamp(router)
 
+	mec := serverState.player.GetMusicEndedChan()
+
 	for {
 		select {
-		case <-(*serverState.player).GetMusicEndedChan():
+		case <-mec:
 			changeMusic(h.state.state, h.state)
 		default:
 			time.Sleep(sleepTime)

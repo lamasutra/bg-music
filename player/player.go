@@ -7,7 +7,7 @@ import (
 
 var player model.Player
 
-func CreatePlayer(playerType string) *model.Player {
+func CreatePlayer(playerType string) model.Player {
 
 	switch playerType {
 	case "beep":
@@ -17,11 +17,6 @@ func CreatePlayer(playerType string) *model.Player {
 				NumChannels: 2,
 				Precision:   2,
 			},
-			sequencers: &sequencers{
-				music:    NewBeepSequencer(8),
-				sfx:      NewBeepSequencer(8),
-				narrator: NewBeepSequencer(32),
-			},
 		})
 	}
 
@@ -30,9 +25,9 @@ func CreatePlayer(playerType string) *model.Player {
 	}
 	player.Init()
 
-	return &player
+	return player
 }
 
-func GetCurrentPlayer() *model.Player {
-	return &player
+func GetCurrentPlayer() model.Player {
+	return player
 }

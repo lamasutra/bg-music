@@ -40,6 +40,7 @@ type tuiLogsView struct {
 
 type tuiModel struct {
 	log      []string
+	logFile  *os.File
 	music    tuiMusicProgressbar
 	volume   tuiVolumeProgressbar
 	logsView tuiLogsView
@@ -54,6 +55,12 @@ func NewTui() *tuiModel {
 			model: progress.New(),
 		},
 	}
+	var err error
+	tm.logFile, err = os.OpenFile("tui.log", os.O_CREATE|os.O_WRONLY, 0755)
+	if err != nil {
+		panic(err)
+	}
+
 	p := tea.NewProgram(tm, tea.WithAltScreen())
 	// tea.WithMouseAllMotion()
 	go func() {
@@ -79,7 +86,13 @@ func (m *tuiModel) Debug(args ...any) {
 	for i, val := range args {
 		buf[i+1] = fmt.Sprint(val)
 	}
-	m.log = append(m.log, strings.Join(buf, " "))
+	str := strings.Join(buf, " ")
+	m.logFile.WriteString(str + "\n")
+	m.log = append(m.log, str)
+	if len(m.log) > 100 {
+		newLog := m.log[1:]
+		m.log = newLog
+	}
 }
 
 func (m *tuiModel) Error(args ...any) {

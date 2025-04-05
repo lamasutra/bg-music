@@ -54,6 +54,8 @@ func loadData(host string) {
 		err = inputData.HudMsg.Load(host, state.lastEvt, state.lastDmg)
 		if err != nil {
 			ui.Error("hudMsg error: ", err)
+		} else {
+
 		}
 	} else {
 		if inputData.Identity != 0 {

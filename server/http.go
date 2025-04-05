@@ -48,11 +48,9 @@ func (h *HttpServer) Serve(conf *model.Config, player model.Player) {
 
 	go polishAladinsLamp(router)
 
-	mec := serverState.player.GetMusicEndedChan()
-
 	for {
 		select {
-		case <-mec:
+		case <-serverState.player.GetMusicEndedChan():
 			changeMusic(h.state.state, h.state)
 		default:
 			time.Sleep(sleepTime)
@@ -83,15 +81,18 @@ func controlHandler(c *gin.Context) {
 
 	switch action {
 	case "load":
+		ui.Debug("control@load")
 		data := LoadData{}
 		if err := c.ShouldBindJSON(&data); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		instance.loadConfig(&data)
+		// changeMusic(instance.state.state, instance.state)
 		c.Status(http.StatusNoContent)
 		return
 	case "next":
+		ui.Debug("control@next")
 		changeMusic(instance.state.state, instance.state)
 		c.Status(http.StatusNoContent)
 		return

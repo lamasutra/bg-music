@@ -44,7 +44,7 @@ func main() {
 		return
 	}
 
-	ui.Debug("your nickname", conf.Nickname)
+	ui.Debug("your configured nickname", "`"+conf.Nickname+"`")
 
 	bgPayer := player.CreatePlayer(conf.BgPlayerType, &conf)
 	stMachine := stateMachine.New("idle", &conf.StateRules)

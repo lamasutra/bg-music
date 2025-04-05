@@ -58,11 +58,7 @@ func triggerEvent(event string, srv *ServerState) error {
 			return err
 		}
 
-		_, err = srv.player.PlaySfx(sfx, srv.config)
-		if err != nil {
-			ui.Error(err)
-			return err
-		}
+		srv.player.PlaySfx(sfx, srv.config)
 	}
 
 	return nil
@@ -94,30 +90,12 @@ func changeState(state string, srv *ServerState) error {
 		return nil
 	}
 	srv.state = state
-	st, err := srv.config.GetState(state)
-	if err != nil {
-		ui.Error(err)
-		return err
-	}
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
 		ui.Error(err)
 		return err
 	}
-	if st.Volume != nil {
-		// (*srv.player).SetVolume(uint8(*st.Volume))
-		_, err = srv.player.PlayMusicAtVolume(music, srv.config, uint8(*st.Volume))
-		if err != nil {
-			ui.Error(err)
-			return err
-		}
-	} else {
-		_, err = srv.player.PlayMusic(music, srv.config)
-		if err != nil {
-			ui.Error(err)
-			return err
-		}
-	}
+	srv.player.PlayMusic(music, srv.config, false)
 
 	return nil
 }
@@ -129,7 +107,13 @@ func changeMusic(state string, srv *ServerState) error {
 		ui.Error(err)
 		return err
 	}
-	_, err = srv.player.PlayMusic(music, srv.config)
+	st, err := srv.config.GetState(state)
+	if err != nil {
+		ui.Error(err)
+		return err
+	}
+	allowSame := len(st.Music) == 1
+	srv.player.PlayMusic(music, srv.config, allowSame)
 
 	return err
 }

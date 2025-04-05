@@ -675,6 +675,52 @@
                 }
             }
         },
+        "tank": {
+            "extend": "default",
+            "title": "tanks",
+            "states" :{
+                "begin": {
+                    "music":[
+                        {
+                            "path": "crusader/2/02 Track 2.mp3",
+                            "volume": 50
+                        },
+                        {
+                            "path": "crusader/2/09 Track 9.mp3",
+                            "volume": 50
+                        }
+                    ]
+                },
+                "danger_ground": {
+                    "music":[
+                        {
+                            "path": "crusader/2/02 Track 2.mp3",
+                            "volume": 50
+                        },
+                        {
+                            "path": "crusader/2/09 Track 9.mp3",
+                            "volume": 50
+                        }
+                    ]
+                },
+                "battle_ground": {
+                    "music":[
+                        {
+                            "path": "crusader/2/02 Track 2.mp3",
+                            "volume": 50
+                        },
+                        {
+                            "path": "crusader/2/09 Track 9.mp3",
+                            "volume": 50
+                        },
+                        {
+                            "path": "crusader/2/14 Track 14.mp3",
+                            "volume": 50
+                        }
+                    ]
+                }
+            }
+        },
         "tfx-adlib": {
             "extend": "default",
             "title": "AdLib theme",
@@ -864,8 +910,9 @@
     },
     "vehicles": {
         "tank": {
-            "volume": 20,
-            "type": "tank"
+            "volume": 65,
+            "type": "tank",
+            "theme": "tank"
         },
         "air": {
             "type": "air"
@@ -877,6 +924,9 @@
             "theme": "tfx-adlib"
         },
         "fa_18c_late": {
+            "theme": "tfx-adlib"
+        },
+        "fa_18a": {
             "theme": "tfx-adlib"
         }
     }

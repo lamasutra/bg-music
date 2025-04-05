@@ -28,9 +28,17 @@ func TestSequencerStream(t *testing.T) {
 
 	speaker.Play(&seq1, &seq2)
 
+	i := 0
 	for {
 		time.Sleep(time.Second)
+		if i == 5 {
+			seq1.Append(&s1)
+		}
+		if i == 10 {
+			seq1.Append(&s1)
+		}
+
+		i++
 	}
 
-	beep.Seq()
 }

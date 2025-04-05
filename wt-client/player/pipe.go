@@ -54,6 +54,12 @@ func (p *PipePlayer) TriggerEvent(event string) error {
 	return err
 }
 
+func (p *PipePlayer) ChangeMusic() error {
+	_, err := p.controlPipe.WriteString("next\n")
+
+	return err
+}
+
 func (p *PipePlayer) Speak(string) error {
 	ui.Debug("speak is not supported yet")
 

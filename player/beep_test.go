@@ -19,13 +19,16 @@ var conf = model.Config{
 }
 
 var music1 = model.Music{
-	Path: "crusader/2/01 Track 1.mp3",
+	Volume: 100,
+	Path:   "crusader/2/01 Track 1.mp3",
 }
 var music2 = model.Music{
-	Path: "crusader/2/02 Track 2.mp3",
+	Volume: 100,
+	Path:   "crusader/2/02 Track 2.mp3",
 }
 var music3 = model.Music{
-	Path: "crusader/2/03 Track 3.mp3",
+	Volume: 100,
+	Path:   "crusader/2/03 Track 3.mp3",
 }
 
 var sfx = model.Sfx{
@@ -113,29 +116,13 @@ var awacs1 = model.Speech{
 
 func TestMusic(t *testing.T) {
 	t.Log("testing music")
+
+	// return
+
 	ui.CreateUI("cli")
 	b := CreatePlayer("beep")
-	b.PlayMusic(&music1, &conf)
+	b.PlayMusic(&music1, &conf, true)
 	i := 0
-	for {
-		time.Sleep(time.Second)
-		i++
-		if i == 1 {
-			break
-		}
-	}
-
-	stream, _ := b.PlayMusic(&music2, &conf)
-	for {
-		time.Sleep(time.Second)
-		i++
-		if i == 2 {
-			break
-		}
-	}
-
-	ui.Debug("seek end")
-	stream.Seek(stream.Len())
 	for {
 		time.Sleep(time.Second)
 		i++
@@ -143,6 +130,25 @@ func TestMusic(t *testing.T) {
 			break
 		}
 	}
+
+	b.PlayMusic(&music2, &conf, true)
+	for {
+		time.Sleep(time.Second)
+		i++
+		if i == 6 {
+			break
+		}
+	}
+
+	b.PlayMusic(&music1, &conf, true)
+	for {
+		time.Sleep(time.Second)
+		i++
+		if i == 9 {
+			break
+		}
+	}
+
 	ui.Debug("close")
 	b.Close()
 }
@@ -159,8 +165,8 @@ func TestCrossfade(t *testing.T) {
 
 	crossfadeNum := format.SampleRate.N(time.Second)
 
-	streamer1, _, _ := openFile(getMusicPath(&music3, &conf))
-	streamer2, _, _ := openFile(getMusicPath(&music2, &conf))
+	streamer1, _, _ := openFile(conf.GetMusicPath(&music3))
+	streamer2, _, _ := openFile(conf.GetMusicPath(&music2))
 
 	s := NewBeepSequencer(16, "song")
 	ss := NewBeepSequencer(32, "sfx")
@@ -200,8 +206,9 @@ func TestCrossfade(t *testing.T) {
 
 func TestSpeech(t *testing.T) {
 	t.Log("testing speech")
+
 	return
-	// return
+
 	// event := model.Event{
 	// 	Volume: 100,
 	// }
@@ -211,19 +218,15 @@ func TestSpeech(t *testing.T) {
 
 	ui.CreateUI("cli")
 	b := CreatePlayer("beep")
-
-	// (*b).SetVolume(50)
+	// b.SetVolume(100)
 
 	// sentence := []model.Speech{hostiles, s2, s100, s50, s2, degrees, awacs1}
 
-	_, err := b.PlayMusic(&music1, &conf)
-	if err != nil {
-		t.Error(err)
-	}
+	b.PlayMusic(&music1, &conf, true)
 
-	// (*b).Speak([]model.Speech{awacs1}, &conf)
+	// b.Speak([]model.Speech{awacs1}, &conf)
 
-	// (*b).Speak(&sentence, &conf)
+	// b.Speak(&sentence, &conf)
 	// (*b).PlaySfx(&sfx, &conf)
 
 	// speaker.Play(&hostiles)
@@ -232,9 +235,9 @@ func TestSpeech(t *testing.T) {
 	for {
 		time.Sleep(time.Second)
 		i++
-		if i == 3 {
-			b.PlayMusic(&music2, &conf)
-		}
+		// if i == 3 {
+		// 	b.PlayMusic(&music2, &conf)
+		// }
 	}
 
 }

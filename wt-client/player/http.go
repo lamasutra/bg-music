@@ -72,6 +72,22 @@ func (h *HttPlayer) TriggerEvent(event string) error {
 	return err
 }
 
+func (h *HttPlayer) ChangeMusic() error {
+	req, err := http.NewRequest("PUT", h.host+"next", bytes.NewBufferString(""))
+	if err != nil {
+		return err
+	}
+	_, err = h.client.Do(req)
+	if err != nil {
+		return err
+	}
+	req.Body.Close()
+
+	ui.Debug("changed music")
+
+	return err
+}
+
 func (h *HttPlayer) Speak(sentence string) error {
 	req, err := http.NewRequest("PUT", h.host+"speak?sentence="+sentence, bytes.NewBufferString(""))
 	if err != nil {

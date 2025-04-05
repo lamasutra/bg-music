@@ -31,6 +31,9 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 	var awacsPermition bool
 	var headingReported bool
 	var headingSpoken bool
+	hudMsgParser := model.NewDamageParser()
+	player := hudMsgParser.FindOrCreatePlayer(conf.Nickname)
+	var currentTarget *model.Player
 	// var ok bool
 
 	initPatterns(conf)
@@ -48,11 +51,16 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 	for {
 		loadData(host)
 		parseInput(conf)
-		ui.Input(input)
+		// ui.Input(input)
 		// events
+		// jstr, _ := json.MarshalIndent(player, "", "  ")
+		// ui.Debug(string(jstr))
 		if input.MissionStarted {
-			if lastKillTime < input.LastPlayerMadeKillTime {
-				lastKillTime = input.LastPlayerMadeKillTime
+			hudMsgParser.Parse(inputData.HudMsg)
+			currentTarget = player.CurrentTarget
+			// @todo - configurable events
+			if lastKillTime < player.LastKillTime {
+				lastKillTime = player.LastKillTime
 				go func() {
 					r := rand.Float64() * 0.5
 					time.Sleep(time.Duration((1.5 + r) * float64(time.Second)))
@@ -61,8 +69,8 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 					}
 				}()
 			}
-			if lastPlayerBurningTime < input.LastPlayerBurningTime {
-				lastPlayerBurningTime = input.LastPlayerBurningTime
+			if lastPlayerBurningTime < player.LastBurnedTime {
+				lastPlayerBurningTime = player.LastBurnedTime
 				go func() {
 					r := rand.Float64() * 0.5
 					time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
@@ -71,8 +79,8 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 					}
 				}()
 			}
-			if lastPlayerDamagedTime < input.LastPlayerCritDamageTime {
-				lastPlayerDamagedTime = input.LastPlayerCritDamageTime
+			if lastPlayerDamagedTime < player.LastDamagedTime {
+				lastPlayerDamagedTime = player.LastDamagedTime
 				go func() {
 					r := rand.Float64() * 0.5
 					time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
@@ -81,8 +89,8 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 					}
 				}()
 			}
-			if lastPlayerSeverelyDamagedTime < input.LastPlayerSeverDamageTime {
-				lastPlayerSeverelyDamagedTime = input.LastPlayerSeverDamageTime
+			if lastPlayerSeverelyDamagedTime < player.LastSeverelyDamagedTime {
+				lastPlayerSeverelyDamagedTime = player.LastSeverelyDamagedTime
 				go func() {
 					r := rand.Float64() * 0.5
 					time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
@@ -91,12 +99,12 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 					}
 				}()
 			}
-			if lastPlayerMadeSeverDamage < input.LastPlayerMadeSeverDamageTime {
-				lastPlayerMadeSeverDamage = input.LastPlayerMadeSeverDamageTime
+			if lastPlayerMadeSeverDamage < player.LastSeverDamageTime {
+				lastPlayerMadeSeverDamage = player.LastSeverDamageTime
 				go func() {
 					r := rand.Float64() * 0.5
 					time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
-					if !input.PlayerDead {
+					if !input.PlayerDead && !currentTarget.Dead {
 						bgPlayer.TriggerEvent("foe_sever_damage")
 					}
 				}()
@@ -127,6 +135,7 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 			awacsPermition = false
 			headingReported = false
 			headingSpoken = false
+			player.Reset()
 		}
 		// vehicle changed
 		if currentVehicle != input.PlayerVehicle {
@@ -142,6 +151,7 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 					States:  vehicleTheme.States,
 					Narrate: vehicleTheme.Narrate,
 				})
+				bgPlayer.ChangeMusic()
 				awacsPermition = false
 				headingReported = false
 				headingSpoken = false

@@ -14,19 +14,13 @@ func NewCli() *cliState {
 }
 
 func (s *cliState) Debug(args ...any) {
-	var newArgs []any
-	hasR := false
-	if str, ok := args[0].(string); ok && strings.Contains(str, "\r") {
-		args[0] = str[1:]
-		hasR = true
+	length := len(args) + 1
+	buf := make([]string, length)
+	buf[0] = time.Now().Format("15:04:05.000")
+	for i, val := range args {
+		buf[i+1] = fmt.Sprint(val)
 	}
-	if hasR {
-		newArgs = []any{"\r", time.Now().Format("15:04:05.000"), " "}
-	} else {
-		newArgs = []any{time.Now().Format("15:04:05.000"), " "}
-	}
-	newArgs = append(newArgs, args...)
-	fmt.Println(fmt.Sprint(newArgs...))
+	fmt.Println(strings.Join(buf, " "))
 }
 
 func (s *cliState) Write(p []byte) (n int, err error) {

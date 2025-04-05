@@ -21,12 +21,15 @@ func (c *Config) GetState(state string) (*State, error) {
 }
 
 func (c *Config) GetStateMusic(state string, index uint8) (*Music, error) {
-	ev, err := c.GetState(state)
+	st, err := c.GetState(state)
 	if err != nil {
 		return &Music{}, err
 	}
 
-	music := ev.Music[index]
+	music := st.Music[index]
+	if music.Volume == 0 {
+		music.Volume = *st.Volume
+	}
 	return &music, nil
 }
 

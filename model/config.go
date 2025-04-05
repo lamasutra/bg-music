@@ -29,3 +29,11 @@ func (c *Config) Read(path string) error {
 
 	return nil
 }
+
+func (c *Config) GetSfxPath(sfx *Sfx) string {
+	return c.Path + "/" + sfx.Path
+}
+
+func (c *Config) GetMusicPath(music *Music) string {
+	return c.Path + "/" + music.Path
+}

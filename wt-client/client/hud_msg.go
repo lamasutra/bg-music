@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
+	"regexp"
 )
 
 type HudMsg struct {
@@ -22,17 +22,18 @@ type Damage struct {
 	Time   int    `json:"time"`
 }
 
-func (hudMsg *HudMsg) Unmarshal(jsonBytes []byte) error {
-	return json.Unmarshal(jsonBytes, &hudMsg)
+func (h *HudMsg) Unmarshal(jsonBytes []byte) error {
+	return json.Unmarshal(jsonBytes, &h)
 }
 
-func (hudMsg *HudMsg) Load(host string, lastEvt uint64, lastDmg uint64) error {
+func (h *HudMsg) Load(host string, lastEvt uint64, lastDmg uint64) error {
+	// fmt.Printf("%vhudmsg?lastEvt=%v&lastDmg=%v", host, lastEvt, lastDmg)
 	body, err := GetDataFromUrl(fmt.Sprintf("%vhudmsg?lastEvt=%v&lastDmg=%v", host, lastEvt, lastDmg))
 	if err != nil {
 		return err
 	}
 
-	err = hudMsg.Unmarshal(body)
+	err = h.Unmarshal(body)
 	if err != nil {
 		return err
 	}
@@ -40,40 +41,32 @@ func (hudMsg *HudMsg) Load(host string, lastEvt uint64, lastDmg uint64) error {
 	return nil
 }
 
-func (hudMsg *HudMsg) HasCrashed(nickname string) bool {
-	for _, msg := range hudMsg.Damage {
-		if strings.Contains(msg.Msg, "has crashed") && strings.Contains(msg.Msg, nickname) {
-			return true
+func (h *HudMsg) Each(callback func(dmg Damage, index int) bool) {
+	var brk bool
+	for i, dmg := range h.Damage {
+		brk = callback(dmg, i)
+		if brk {
+			break
+		}
+	}
+}
+
+func (h *HudMsg) MatchMessages(pattern *regexp.Regexp) []Damage {
+	// fmt.Println("c: ", len(hudMsg.Damage), pattern.String())
+	matched := make([]Damage, 0)
+	for _, msg := range h.Damage {
+		if pattern.MatchString(msg.Msg) {
+			matched = append(matched, msg)
 		}
 	}
 
-	return false
+	return matched
 }
 
-func (hudMsg *HudMsg) IsShotDown(nickname string) bool {
-	for _, msg := range hudMsg.Damage {
-		if strings.Contains(msg.Msg, "shot down "+nickname) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (hudMsg *HudMsg) IsMissionEnded() bool {
-	for _, msg := range hudMsg.Damage {
-		if strings.Contains(msg.Msg, "has achieved") || strings.Contains(msg.Msg, "has delivered the final blow!") {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (hudMsg *HudMsg) GetLastDmg() *Damage {
-	lastIndex := len(hudMsg.Damage) - 1
+func (h *HudMsg) GetLastDmg() *Damage {
+	lastIndex := len(h.Damage) - 1
 	if lastIndex < 0 {
 		return nil
 	}
-	return &hudMsg.Damage[lastIndex]
+	return &h.Damage[lastIndex]
 }

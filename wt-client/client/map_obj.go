@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"math"
 	"strings"
-
-	"bigbangit.com/wt-client/config"
 )
 
 type MapObj []Entity
@@ -21,6 +19,10 @@ type Entity struct {
 	Y        float64 `json:"y"`
 	Dx       float64 `json:"dx"`
 	Dy       float64 `json:"dy"`
+	Sx       float64 `json:"sx"`
+	Sy       float64 `json:"sy"`
+	Ex       float64 `json:"ex"`
+	Ey       float64 `json:"ey"`
 }
 
 func inArray(value string, haystack *[]string) bool {
@@ -75,20 +77,43 @@ func (mapObj *MapObj) GetDistance(ent1 *Entity, ent2 *Entity, mapInfo *MapInfo) 
 	return math.Sqrt(dx*dx + dy*dy)
 }
 
+func (mapObj *MapObj) GetHeading(ent1 *Entity, ent2 *Entity) float64 {
+	dx := ent2.X - ent1.X
+	dy := ent2.Y - ent1.Y
+
+	// Compute the angle in radians using atan2
+	angleRad := math.Atan2(dy, dx)
+
+	// Convert the angle from radians to degrees
+	angleDeg := angleRad * 180 / math.Pi
+	angleDeg += 90
+
+	// Normalize the angle to be between 0° and 360°
+	if angleDeg < 0 {
+		angleDeg += 360
+	}
+
+	return angleDeg
+}
+
 func (mapObj *MapObj) GetAircrafts() *[]Entity {
 	return mapObj.getEntitiesByType("aircraft")
 }
 
-func (mapObj *MapObj) GetEnemyAircrafts(conf *config.Config) *[]Entity {
-	return mapObj.getEntitiesByTypeAndColors("aircraft", &conf.Colors.Enemy.Air)
+func (mapObj *MapObj) GetAircraftsByColors(colors *[]string) *[]Entity {
+	return mapObj.getEntitiesByTypeAndColors("aircraft", colors)
 }
 
-func (mapObj *MapObj) GetEnemyGroundUnits(conf *config.Config) *[]Entity {
-	return mapObj.getEntitiesByTypeAndColors("ground_model", &conf.Colors.Enemy.Ground)
+func (mapObj *MapObj) GetGroundUnitsByColors(colors *[]string) *[]Entity {
+	return mapObj.getEntitiesByTypeAndColors("ground_model", colors)
 }
 
 func (mapObj *MapObj) GetTanks() *[]Entity {
 	return mapObj.getEntitiesByType("ground_model")
+}
+
+func (mapObj *MapObj) GetTankRespawnBases() *[]Entity {
+	return mapObj.getEntitiesByType("respawn_base_tank")
 }
 
 func (mapObj *MapObj) Load(host string) error {

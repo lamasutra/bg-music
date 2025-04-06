@@ -36,8 +36,6 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 	var currentTarget *model.Player
 	// var ok bool
 
-	initPatterns(conf)
-
 	// @todo find recent state
 	ui.Debug("sending default state ", currentState, " ... ")
 
@@ -50,13 +48,12 @@ func LoadLoop(host string, conf *model.Config, stMachine *stateMachine.StateMach
 
 	for {
 		loadData(host)
-		parseInput(conf)
+		parseInput(conf, hudMsgParser, player)
 		// ui.Input(input)
 		// events
 		// jstr, _ := json.MarshalIndent(player, "", "  ")
 		// ui.Debug(string(jstr))
 		if input.MissionStarted {
-			hudMsgParser.Parse(inputData.HudMsg)
 			currentTarget = player.CurrentTarget
 			// @todo - configurable events
 			if lastKillTime < player.LastKillTime {

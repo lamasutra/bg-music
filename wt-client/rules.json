@@ -53,9 +53,8 @@
     "begin": {
         "states": [
             "landed",
+            "danger_air",
             "battle_air",
-            "battle_ground",
-            "danger_ground",
             "death",
             "success",
             "failure"
@@ -80,8 +79,6 @@
             "landed",
             "clear",
             "battle_air",
-            "battle_ground",
-            "danger_ground",
             "death",
             "success",
             "failure"
@@ -102,37 +99,10 @@
             "EnemyGroundClose": false
         }
     },
-    "danger_ground": {
-        "states": [
-            "landed",
-            "clear",
-            "battle_air",
-            "battle_ground",
-            "danger_air",
-            "death",
-            "success",
-            "failure"
-        ],
-        "conditions_bool": {
-            "GameRunning": true,
-            "MapLoaded": true,
-            "MissionStarted": true,
-            "MissionEnded": false,
-            "PlayerLanded": false,
-            "PlayerDead": false,
-            "EnemyAirNear": false,
-            "EnemyAirClose": false,
-            "EnemyGroundNear": true,
-            "EnemyGroundClose": false,
-            "AirBattle": false
-        }
-    },
     "battle_air": {
         "states": [
             "landed",
             "danger_air",
-            "danger_ground",
-            "battle_ground",
             "death",
             "success",
             "failure"
@@ -151,30 +121,6 @@
         "conditions_bool_disabled": {
             "EnemyGroundNear": false,
             "EnemyGroundClose": false
-        }
-    },
-    "battle_ground": {
-        "states": [
-            "landed",
-            "danger_air",
-            "danger_ground",
-            "battle_air",
-            "death",
-            "success",
-            "failure"
-        ],
-        "conditions_bool": {
-            "GameRunning": true,
-            "MapLoaded": true,
-            "MissionStarted": true,
-            "MissionEnded": false,
-            "PlayerLanded": false,
-            "PlayerDead": false,
-            "EnemyAirNear": false,
-            "EnemyAirClose": false,
-            "EnemyGroundNear": true,
-            "EnemyGroundClose": true,
-            "AirBattle": false
         }
     },
     "damaged": {
@@ -218,7 +164,6 @@
             "landed",
             "death",
             "danger_air",
-            "danger_ground",
             "success",
             "failure"
         ],

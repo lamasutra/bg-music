@@ -27,29 +27,34 @@ type Player struct {
 	CurrentTarget           *Player
 }
 
-type damageParser struct {
-	regexp *regexp.Regexp
-	player map[string]*Player
+type DamageParser struct {
+	regexp          *regexp.Regexp
+	player          map[string]*Player
+	lastAnyKillTime int64
 }
 
-func NewDamageParser() *damageParser {
-	d := damageParser{}
+func NewDamageParser() *DamageParser {
+	d := DamageParser{}
 	d.init()
 
 	return &d
 }
 
-func (d *damageParser) init() {
-	d.regexp = regexp.MustCompile(`(\[ai\])?\s?([^\(]+)\s+(\([^\)]+\))\s+(critically\sdamaged|severely\sdamaged|shot\sdown|destroyed|has\scrashed|set\safire)\s+(\[ai\])?\s?([^\(]+)?\s?(\([^\)]+\))?\.?`)
+func (d *DamageParser) init() {
+	d.regexp = regexp.MustCompile(`(\[ai\])?\s?([^\(]+)\s+(\([^\)]+\))?\s?(critically\sdamaged|severely\sdamaged|shot\sdown|destroyed|has\scrashed\.|set\safire)\s*(\[ai\])?\s?([^\(]+)?\s?(\([^\)]+\))?\.?`)
 	d.player = make(map[string]*Player, 20)
 }
 
-func (d *damageParser) Parse(hudMsg *client.HudMsg) {
+func (d *DamageParser) Parse(hudMsg *client.HudMsg) {
 	hudMsg.Each(d.parseDamage)
 }
 
-func (d *damageParser) parseDamage(dmg client.Damage, index int) bool {
-	ui.Debug("parse damage")
+func (d *DamageParser) GetLastKillTime() int64 {
+	return d.lastAnyKillTime
+}
+
+func (d *DamageParser) parseDamage(dmg client.Damage, index int) bool {
+	ui.Debug("parse damage", dmg.Msg)
 	matches := d.regexp.FindStringSubmatch(dmg.Msg)
 	if len(matches) == 0 {
 		ui.Debug("no match")
@@ -64,7 +69,7 @@ func (d *damageParser) parseDamage(dmg client.Damage, index int) bool {
 	// ui.Debug(matches)
 	var aiSource, aiTarget bool
 	aiSource = matches[1] == "[ai]"
-	aiTarget = matches[5] == "[ai]" || matches[5] == ""
+	aiTarget = matches[5] == "[ai]" || (matches[5] == "" && matches[7] == "")
 	if aiSource {
 		ui.Debug("ai source")
 		d.parseAiSource(&matches)
@@ -79,14 +84,14 @@ func (d *damageParser) parseDamage(dmg client.Damage, index int) bool {
 	return false
 }
 
-func (d *damageParser) parseAiSource(matches *[]string) {
+func (d *DamageParser) parseAiSource(matches *[]string) {
 	// var sourceName, targetName string
 	// var sourceVehicle, targetVehicle string
 	// var action string
 
 }
 
-func (d *damageParser) parseAiTarget(matches *[]string) (*Player, *Player) {
+func (d *DamageParser) parseAiTarget(matches *[]string) (*Player, *Player) {
 	var sourceName, targetName string
 	var sourceVehicle, targetVehicle string
 	var action string
@@ -103,12 +108,17 @@ func (d *damageParser) parseAiTarget(matches *[]string) (*Player, *Player) {
 	targetPlayer.Vehicle = strings.TrimRight(strings.TrimLeft(targetVehicle, "("), ")")
 
 	// ui.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
-	d.handleAction(action, sourcePlayer, targetPlayer)
+	handled := d.handleAction(action, sourcePlayer, targetPlayer)
+	if handled {
+		ui.Debug("action", action, "handled")
+	} else {
+		ui.Debug("action", action, "not handled")
+	}
 
 	return sourcePlayer, targetPlayer
 }
 
-func (d *damageParser) parsePlayers(matches *[]string) (*Player, *Player) {
+func (d *DamageParser) parsePlayers(matches *[]string) (*Player, *Player) {
 	var sourceName, targetName string
 	var sourceVehicle, targetVehicle string
 	var action string
@@ -125,12 +135,17 @@ func (d *damageParser) parsePlayers(matches *[]string) (*Player, *Player) {
 	targetPlayer.Vehicle = strings.TrimRight(strings.TrimLeft(targetVehicle, "("), ")")
 
 	// ui.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
-	d.handleAction(action, sourcePlayer, targetPlayer)
+	handled := d.handleAction(action, sourcePlayer, targetPlayer)
+	if handled {
+		ui.Debug("action", action, "handled")
+	} else {
+		ui.Debug("action", action, "not handled")
+	}
 
 	return sourcePlayer, targetPlayer
 }
 
-func (d *damageParser) FindOrCreatePlayer(name string) *Player {
+func (d *DamageParser) FindOrCreatePlayer(name string) *Player {
 	pl, ok := d.player[name]
 	if ok {
 		ui.Debug("player found", name)
@@ -147,17 +162,18 @@ func (d *damageParser) FindOrCreatePlayer(name string) *Player {
 	return pl
 }
 
-func (d *damageParser) handleAction(action string, source *Player, target *Player) {
+func (d *DamageParser) handleAction(action string, source *Player, target *Player) bool {
 	now := time.Now().Unix()
 	switch action {
-	case "crashed":
+	case "has crashed.":
 		source.Damaged = true
 		source.Dead = true
 		source.SeverlyDamaged = true
 		source.LastKilledTime = now
 		source.LastDamagedTime = now
 		source.LastSeverelyDamagedTime = now
-		ui.Debug("crashed", source, target)
+		ui.Debug("has crashed", source, target)
+		return true
 	case "shot down", "destroyed":
 		source.LastKillTime = now
 		target.LastKilledTime = now
@@ -165,25 +181,32 @@ func (d *damageParser) handleAction(action string, source *Player, target *Playe
 		target.Damaged = true
 		source.addTarget(target)
 		ui.Debug("shot down or destroyed", source, target)
+		d.lastAnyKillTime = now
+		return true
 	case "set afire":
 		source.LastBurnTime = now
 		target.LastBurnedTime = now
 		target.Damaged = true
 		source.addTarget(target)
 		ui.Debug("set afire", source, target)
+		return true
 	case "critically damaged":
 		source.LastDamageTime = now
 		target.LastDamagedTime = now
 		target.Damaged = true
 		source.addTarget(target)
 		ui.Debug("critically damaged", source, target)
+		return true
 	case "severely damaged":
 		source.LastSeverDamageTime = now
 		target.LastSeverelyDamagedTime = now
 		target.Damaged = true
 		source.addTarget(target)
 		ui.Debug("severely damaged", source, target)
+		return true
 	}
+
+	return false
 }
 
 func (p *Player) addTarget(t *Player) {

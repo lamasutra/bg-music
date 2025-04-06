@@ -1,15 +1,15 @@
 package input
 
 import (
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/client"
 	"github.com/lamasutra/bg-music/wt-client/model"
+	"github.com/lamasutra/bg-music/wt-client/ui"
 )
 
-func parseInput(conf *model.Config) {
+func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *model.Player) {
 	// fmt.Println("Data:", inputData)
 
 	input.MapLoaded = inputData.MapInfo.Valid
@@ -18,8 +18,10 @@ func parseInput(conf *model.Config) {
 	current_ts := time.Now().Unix()
 
 	if input.MapLoaded {
+		hudMsgParser.Parse(inputData.HudMsg)
+
 		// fmt.Println("game mode", input.GameMode)
-		player := inputData.MapObj.GetPlayerEntity()
+		playerEntity := inputData.MapObj.GetPlayerEntity()
 		enemyAircrafts := inputData.MapObj.GetAircraftsByColors(&conf.Colors.Foe.Air)
 		enemyGroundUnits := inputData.MapObj.GetGroundUnitsByColors(&conf.Colors.Foe.Ground)
 		if input.GameMode == "unknown" {
@@ -29,11 +31,15 @@ func parseInput(conf *model.Config) {
 			} else {
 				input.GameMode = "air"
 			}
+			ui.Debug("Game mode detected:", input.GameMode)
+			// reset last dmg id
+			lastDamage := inputData.HudMsg.GetLastDmg()
+			if lastDamage != nil {
+				ui.Debug("reseting lastDmg to", lastDamage.ID)
+				state.lastDmg = uint64(lastDamage.ID)
+			}
 		}
 		input.EnemyAirCount = len(*enemyAircrafts)
-		isShotDown := playerIsShotDown(inputData.HudMsg)
-		hasCrashed := playerHasCrashed(inputData.HudMsg)
-		// isMissionEnded := inputData.hudMsg.IsMissionEnded()
 		input.MissionEnded = false
 		if !input.MissionStarted {
 			// set lastDamage to the latest on mission start
@@ -41,37 +47,37 @@ func parseInput(conf *model.Config) {
 			if lastDamage != nil {
 				state.lastDmg = uint64(lastDamage.ID)
 			}
-			input.MissionStarted = player != nil // @todo what else ?
+			input.MissionStarted = playerEntity != nil // @todo what else ?
 		} else {
 			// parse messages from hud_msg to handle events later
-			lastKillMadeTime := getLastPlayerMadeKillTime(inputData.HudMsg)
+			lastKillMadeTime := player.LastKillTime
 			if lastKillMadeTime > 0 {
 				input.LastPlayerMadeKillTime = lastKillMadeTime
 			}
-			lastSeverDamageMadeTime := getLastPlayerMadeSeverDamageTime(inputData.HudMsg)
+			lastSeverDamageMadeTime := player.LastSeverDamageTime
 			if lastSeverDamageMadeTime > 0 {
 				input.LastPlayerMadeSeverDamageTime = lastSeverDamageMadeTime
 			}
-			lastAnyKillTime := getLastAnyKillTime(inputData.HudMsg)
+			lastAnyKillTime := hudMsgParser.GetLastKillTime()
 			if lastAnyKillTime > 0 {
 				input.LastAnyKillTime = lastKillMadeTime
 			}
-			lastBurningTime := getLastPlayerIsBurningTime(inputData.HudMsg)
+			lastBurningTime := player.LastBurnedTime
 			if lastBurningTime > 0 {
 				input.LastPlayerBurningTime = lastBurningTime
 			}
-			lastCritTime := getLastPlayerIsCritDamagedTime(inputData.HudMsg)
+			lastCritTime := player.LastDamagedTime
 			if lastCritTime > 0 {
 				input.LastPlayerCritDamageTime = lastCritTime
 			}
-			lastSeverTime := getLastPlayerIsSeverelyDamagedTime(inputData.HudMsg)
+			lastSeverTime := player.LastSeverelyDamagedTime
 			if lastSeverTime > 0 {
 				input.LastPlayerSeverDamageTime = lastSeverTime
 			}
 		}
-		input.PlayerDead = input.MissionStarted && ((isShotDown || hasCrashed) || shouldStayDead)
-		input.PlayerLanded = input.MissionStarted && player == nil && !isShotDown && !hasCrashed
-		if input.PlayerDead && input.GameMode == "air" {
+		input.PlayerDead = input.MissionStarted && (player.Dead || shouldStayDead)
+		input.PlayerLanded = input.MissionStarted && playerEntity == nil && !player.Dead
+		if player.Dead && input.GameMode == "air" {
 			shouldStayDead = true
 		}
 		// fmt.Println("dead conds", input.PlayerDead, isShotDown, hasCrashed)
@@ -85,18 +91,23 @@ func parseInput(conf *model.Config) {
 		}
 
 		// @todo last known location
-		if player != nil {
-			nearestAir := getNearestEntity(player, enemyAircrafts, inputData.MapObj, inputData.MapInfo)
-			nearestGround := getNearestEntity(player, enemyGroundUnits, inputData.MapObj, inputData.MapInfo)
+		if playerEntity != nil {
+			// reset player damage and dead state if in tank mode, reset after 10s, we are unable to process state of the player from map objects
+			if player.Dead && input.GameMode == "tanks" && player.LastKilledTime+10 > current_ts {
+				player.Dead = false
+				player.Damaged = false
+			}
+			nearestAir := getNearestEntity(playerEntity, enemyAircrafts, inputData.MapObj, inputData.MapInfo)
+			nearestGround := getNearestEntity(playerEntity, enemyGroundUnits, inputData.MapObj, inputData.MapInfo)
 
 			if nearestAir != nil {
-				objDistance = inputData.MapObj.GetDistance(player, nearestAir, inputData.MapInfo)
+				objDistance = inputData.MapObj.GetDistance(playerEntity, nearestAir, inputData.MapInfo)
 				input.NearestEnemyAir = objDistance
 				// 10000
 				input.EnemyAirNear = objDistance < float64(currentTheme.Distances.Air.Danger)
 				// 5000
 				input.EnemyAirClose = objDistance < float64(currentTheme.Distances.Air.Combat)
-				input.EnemyHeading = inputData.MapObj.GetHeading(player, nearestAir)
+				input.EnemyHeading = inputData.MapObj.GetHeading(playerEntity, nearestAir)
 				// fmt.Println("air dist", objDistance, float64(currentTheme.Distances.Air.Danger), float64(currentTheme.Distances.Air.Combat), input.EnemyAirNear, input.EnemyAirClose)
 			} else {
 				input.EnemyAirNear = false
@@ -106,7 +117,7 @@ func parseInput(conf *model.Config) {
 			}
 
 			if nearestGround != nil {
-				objDistance = inputData.MapObj.GetDistance(player, nearestGround, inputData.MapInfo)
+				objDistance = inputData.MapObj.GetDistance(playerEntity, nearestGround, inputData.MapInfo)
 				input.NearestEnemyGround = objDistance
 				// 20000
 				input.EnemyGroundNear = objDistance < float64(currentTheme.Distances.Ground.Danger)
@@ -140,13 +151,14 @@ func parseInput(conf *model.Config) {
 		}
 		// }
 	} else {
-		if input.PlayerType != "" {
+		if input.GameMode != "unknown" {
+			ui.Debug("no map loaded, reseting current vechicle, should stay dead, game mode")
+			input.OnMapNotLoaded()
+			currentVehicle = nil
+			shouldStayDead = false
+			input.GameMode = "unknown"
 			input.MissionEnded = true
 		}
-
-		input.OnMapNotLoaded()
-		currentVehicle = nil
-		shouldStayDead = false
 	}
 
 	input.UpdateBoolMap(inputMapBool, current_ts)
@@ -191,49 +203,4 @@ func isMissionEnded(hudMsg *client.HudMsg) bool {
 	}
 
 	return false
-}
-
-func playerHasCrashed(hudMsg *client.HudMsg) bool {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerHasCrashedRegExp) > 0
-}
-
-func playerIsShotDown(hudMsg *client.HudMsg) bool {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerIsShotDownRegExp) > 0
-}
-
-func getLastAnyKillTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &anyKillRegExp)
-}
-
-func getLastPlayerMadeKillTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerMadeKilledRegExp)
-}
-
-func getLastPlayerMadeSeverDamageTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerMadeSeverDamagedRegExp)
-}
-
-func getLastPlayerIsBurningTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerIsBurningRegExp)
-}
-
-func getLastPlayerIsCritDamagedTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerIsCritDamagedRegExp)
-}
-
-func getLastPlayerIsSeverelyDamagedTime(hudMsg *client.HudMsg) int64 {
-	return getLastTimeForHudMsgAndPattern(hudMsg, &playerIsSeverlyDamagedRegExp)
-}
-
-func getLastTimeForHudMsgAndPattern(hudMsg *client.HudMsg, regExp *regexp.Regexp) int64 {
-	messages := hudMsg.MatchMessages(regExp)
-
-	// fmt.Println(messages)
-	length := len(messages)
-	if length == 0 {
-		return 0
-	}
-	lastMsg := messages[length-1]
-
-	return int64(lastMsg.Time)
 }

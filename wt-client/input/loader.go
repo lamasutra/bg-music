@@ -35,7 +35,7 @@ func loadData(host string) {
 	}
 	err = inputData.MapInfo.Load(host)
 	if err != nil {
-		ui.Error("mapInfo error: ", err)
+		ui.Error("!!! mapInfo error: ", err)
 	}
 	// load other data
 	if inputData.MapInfo.Valid {

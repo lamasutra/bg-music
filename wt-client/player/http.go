@@ -73,7 +73,7 @@ func (h *HttPlayer) TriggerEvent(event string) error {
 }
 
 func (h *HttPlayer) ChangeMusic() error {
-	req, err := http.NewRequest("PUT", h.host+"next", bytes.NewBufferString(""))
+	req, err := http.NewRequest("POST", h.host+"control/next", bytes.NewBufferString(""))
 	if err != nil {
 		return err
 	}

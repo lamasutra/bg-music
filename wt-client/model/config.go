@@ -74,7 +74,7 @@ func (config *Config) Read(path string) error {
 func (c *Config) getVehicleConfig(vehicle string) *Vehicle {
 	conf, ok := c.Vehicles[vehicle]
 	if ok {
-		ui.Debug("config for vehicle `", vehicle, "` not found")
+		ui.Debug("config for vehicle `", vehicle, "` found")
 		return &conf
 	}
 	ui.Debug("vehicle config for `", vehicle, "` not found")

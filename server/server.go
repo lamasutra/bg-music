@@ -66,12 +66,12 @@ func triggerEvent(event string, srv *ServerState) error {
 
 func speak(sentence string, srv *ServerState) error {
 	seq := strings.Split(sentence, ",")
-	ui.Debug(fmt.Sprintf("I will speak %s for you", sentence))
+	ui.Debug(fmt.Sprintf("I will speak `%s` for you", sentence))
 	narSeq := make([]model.Speech, len(seq))
 	for i, key := range seq {
 		val, ok := srv.config.Narrate[key]
 		if !ok {
-			return fmt.Errorf("narrate %s not defined in config", key)
+			return fmt.Errorf("narrate `%s` not defined in config", key)
 		}
 		narSeq[i] = val
 	}

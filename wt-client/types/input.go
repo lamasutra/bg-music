@@ -24,6 +24,7 @@ type WtInput struct {
 	EnemyGroundClose              bool
 	EnemyBaseClose                bool
 	EnemyAirBehind                bool
+	IsTanksGameMode               bool
 	LastAnyKillTime               int64
 	LastPlayerMadeKillTime        int64
 	LastPlayerMadeSeverDamageTime int64
@@ -65,6 +66,7 @@ func (w *WtInput) OnMapNotLoaded() {
 	w.EnemyAirCount = 0
 	w.EnemyGroundClose = false
 	w.EnemyGroundNear = false
+	w.IsTanksGameMode = false
 	w.PlayerType = ""
 	w.PlayerVehicle = ""
 	w.LastPlayerMadeKillTime = 0
@@ -93,6 +95,7 @@ func (w *WtInput) Clear() {
 	w.EnemyGroundClose = false
 	w.EnemyBaseClose = false
 	w.EnemyAirBehind = false
+	w.IsTanksGameMode = false
 	w.LastAnyKillTime = 0
 	w.LastPlayerMadeKillTime = 0
 	w.LastPlayerMadeSeverDamageTime = 0
@@ -119,6 +122,7 @@ func (w *WtInput) UpdateBoolMap(im *WtInputMapBool, currentTs int64) {
 	(*im)["EnemyAirNear"] = w.EnemyAirNear
 	(*im)["EnemyGroundClose"] = w.EnemyGroundClose
 	(*im)["EnemyGroundNear"] = w.EnemyGroundNear
+	(*im)["IsTanksGameMode"] = w.IsTanksGameMode
 	(*im)["AirDanger"] = w.EnemyAirNear
 	(*im)["AirBattle"] = w.EnemyAirClose || w.LastPlayerMadeKillTime+30 > currentTs || w.LastAnyKillTime+30 > currentTs
 	(*im)["PlayerDamaged"] = w.PlayerDamaged

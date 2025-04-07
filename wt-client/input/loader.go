@@ -16,18 +16,9 @@ func loadData(host string) {
 		time.Sleep(sleepOffline)
 		err = inputData.State.Load(host)
 		if err != nil {
-			input.GameRunning = false
-			(*inputMapBool)["GameRunning"] = input.GameRunning
 			return
-		} else {
-			input.GameRunning = true
 		}
-	} else {
-		input.GameRunning = true
-		// @todo fetch lastMsg
 	}
-
-	(*inputMapBool)["GameRunning"] = input.GameRunning
 
 	err = inputData.Indicators.Load(host)
 	if err != nil {

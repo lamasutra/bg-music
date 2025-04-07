@@ -24,12 +24,15 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 		playerEntity := inputData.MapObj.GetPlayerEntity()
 		enemyAircrafts := inputData.MapObj.GetAircraftsByColors(&conf.Colors.Foe.Air)
 		enemyGroundUnits := inputData.MapObj.GetGroundUnitsByColors(&conf.Colors.Foe.Ground)
+		captureZones := inputData.MapObj.GetCaptureZones()
 		if input.GameMode == "unknown" {
 			tankRespawnBases := inputData.MapObj.GetTankRespawnBases()
 			if len(*tankRespawnBases) > 0 {
 				input.GameMode = "tanks"
+				input.IsTanksGameMode = true
 			} else {
 				input.GameMode = "air"
+				input.IsTanksGameMode = false
 			}
 			ui.Debug("Game mode detected:", input.GameMode)
 			// reset last dmg id
@@ -68,17 +71,25 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 			}
 			lastCritTime := player.LastDamagedTime
 			if lastCritTime > 0 {
+				input.PlayerDamaged = true
 				input.LastPlayerCritDamageTime = lastCritTime
 			}
 			lastSeverTime := player.LastSeverelyDamagedTime
 			if lastSeverTime > 0 {
 				input.LastPlayerSeverDamageTime = lastSeverTime
+				input.PlayerDamaged = true
+				input.PlayerSeverelyDamaged = true
 			}
 		}
 		input.PlayerDead = input.MissionStarted && (player.Dead || shouldStayDead)
 		input.PlayerLanded = input.MissionStarted && playerEntity == nil && !player.Dead
 		if player.Dead && input.GameMode == "air" {
 			shouldStayDead = true
+		}
+		// @todo add speed, landed is alive and 0 speed
+		if input.PlayerLanded {
+			player.Damaged = false
+			player.SeverlyDamaged = false
 		}
 		// fmt.Println("dead conds", input.PlayerDead, isShotDown, hasCrashed)
 
@@ -128,6 +139,17 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 				input.EnemyGroundNear = false
 				input.EnemyGroundClose = false
 				input.NearestEnemyGround = -1.0
+			}
+
+			if input.GameMode == "tanks" {
+				nearestZone := getNearestEntity(playerEntity, captureZones, inputData.MapObj, inputData.MapInfo)
+				objDistance = inputData.MapObj.GetDistance(playerEntity, nearestZone, inputData.MapInfo)
+				if !input.EnemyGroundNear {
+					input.EnemyGroundNear = objDistance < float64(currentTheme.Distances.Ground.Danger)
+				}
+				if !input.EnemyGroundClose {
+					input.EnemyGroundClose = objDistance < float64(currentTheme.Distances.Ground.Combat)
+				}
 			}
 
 			// @todo enemy base

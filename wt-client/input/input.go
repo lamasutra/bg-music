@@ -36,14 +36,6 @@ var input = &types.WtInput{
 
 var shouldStayDead bool
 
-// func loopInput() {
-
-// }
-
-// func loopState() {
-
-// }
-
 func Close() {
 	// close(chRead)
 	// close(chInput)

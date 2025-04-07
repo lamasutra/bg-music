@@ -116,6 +116,14 @@ func (mapObj *MapObj) GetTankRespawnBases() *[]Entity {
 	return mapObj.getEntitiesByType("respawn_base_tank")
 }
 
+func (mapObj *MapObj) GetFighterRespawnBases() *[]Entity {
+	return mapObj.getEntitiesByType("respawn_base_fighter")
+}
+
+func (mapObj *MapObj) GetCaptureZones() *[]Entity {
+	return mapObj.getEntitiesByType("capture_zone")
+}
+
 func (mapObj *MapObj) Load(host string) error {
 	body, err := GetDataFromUrl(host + "map_obj.json")
 	if err != nil {

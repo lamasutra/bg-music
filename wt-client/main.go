@@ -7,7 +7,6 @@ import (
 
 	"flag"
 	"fmt"
-	"time"
 
 	"github.com/lamasutra/bg-music/wt-client/input"
 	"github.com/lamasutra/bg-music/wt-client/model"
@@ -48,16 +47,13 @@ func main() {
 
 	bgPayer := player.CreatePlayer(conf.BgPlayerType, &conf)
 	stMachine := stateMachine.New("idle", &conf.StateRules)
+	inputLoop := input.CreateInputLoop(&conf, stMachine, bgPayer)
 
 	// debug
 	ui.Debug(stMachine)
 
 	defer bgPayer.Close()
-	for {
-		input.LoadLoop(conf.Host, &conf, stMachine, bgPayer)
-		time.Sleep(time.Millisecond * 100)
-		// fmt.Println("tick")
-	}
+	inputLoop.Run()
 }
 
 func initUI(args *cmdArgs) {

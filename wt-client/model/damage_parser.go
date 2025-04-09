@@ -9,24 +9,6 @@ import (
 	"github.com/lamasutra/bg-music/wt-client/ui"
 )
 
-type Player struct {
-	Name                    string
-	Vehicle                 string
-	Dead                    bool
-	Damaged                 bool
-	SeverlyDamaged          bool
-	LastKillTime            int64
-	LastDamageTime          int64
-	LastSeverDamageTime     int64
-	LastBurnTime            int64
-	LastKilledTime          int64
-	LastDamagedTime         int64
-	LastSeverelyDamagedTime int64
-	LastBurnedTime          int64
-	Targets                 map[string]*Player
-	CurrentTarget           *Player
-}
-
 type DamageParser struct {
 	regexp          *regexp.Regexp
 	player          map[string]*Player

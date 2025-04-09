@@ -256,7 +256,7 @@
                 "damaged": {
                     "volume": 80,
                     "music": [{
-                        "path": "tfx-sc55/20 Jingle 2.flac",
+                        "path": "tfx-sc55/20 Jingle 2.mp3",
                         "skip": 0,
                         "endBefore": 0
                     }]
@@ -264,7 +264,7 @@
                 "severely_damaged": {
                     "volume": 80,
                     "music": [{
-                        "path": "tfx-sc55/21 Jingle 3.flac",
+                        "path": "tfx-sc55/21 Jingle 3.mp3",
                         "skip": 0,
                         "endBefore": 0
                     }]

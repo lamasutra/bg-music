@@ -11,7 +11,6 @@ import (
 
 	"github.com/lamasutra/bg-music/wt-client/model"
 	"github.com/lamasutra/bg-music/wt-client/player"
-	"github.com/lamasutra/bg-music/wt-client/stateMachine"
 	"github.com/lamasutra/bg-music/wt-client/ui"
 )
 
@@ -19,7 +18,7 @@ type inputLoop struct {
 	pid                           int
 	host                          string
 	conf                          *model.Config
-	stMachine                     *stateMachine.StateMachine
+	stMachine                     *model.StateMachine
 	bgPlayer                      player.BgPlayer
 	currentState                  string
 	state                         string
@@ -40,7 +39,7 @@ type inputLoop struct {
 	currentTarget                 *model.Player
 }
 
-func CreateInputLoop(conf *model.Config, stMachine *stateMachine.StateMachine, bgPlayer player.BgPlayer) *inputLoop {
+func CreateInputLoop(conf *model.Config, stMachine *model.StateMachine, bgPlayer player.BgPlayer) *inputLoop {
 	hmp := model.NewDamageParser()
 	return &inputLoop{
 		host:         conf.Host,
@@ -138,7 +137,7 @@ func (l *inputLoop) handleMissionEvents() {
 		go func() {
 			r := rand.Float64() * 0.5
 			time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
-			if !input.PlayerDead && !input.PlayerSeverelyDamaged {
+			if !input.PlayerDead && !input.PlayerSeverelyDamaged && !l.player.IsDrone {
 				l.bgPlayer.TriggerEvent("damaged")
 			}
 		}()
@@ -148,7 +147,7 @@ func (l *inputLoop) handleMissionEvents() {
 		go func() {
 			r := rand.Float64() * 0.5
 			time.Sleep(time.Duration((0.5 + r) * float64(time.Second)))
-			if !input.PlayerDead {
+			if !input.PlayerDead && !l.player.IsDrone {
 				l.bgPlayer.TriggerEvent("severely_damaged")
 			}
 		}()
@@ -184,6 +183,11 @@ func (l *inputLoop) handleMissionEvents() {
 			}
 			l.headingSpoken = true
 		}()
+	}
+	if !l.player.LastComputedSpeed.IsValid() {
+		if !input.PlayerDead {
+			l.bgPlayer.Speak("oh no")
+		}
 	}
 }
 

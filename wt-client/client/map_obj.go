@@ -69,12 +69,7 @@ func (mapObj *MapObj) GetPlayerEntity() *Entity {
 }
 
 func (mapObj *MapObj) GetDistance(ent1 *Entity, ent2 *Entity, mapInfo *MapInfo) float64 {
-	dx := (ent2.X - ent1.X) * (mapInfo.MapMax[0] - mapInfo.MapMin[0])
-	dy := (ent2.Y - ent1.Y) * (mapInfo.MapMax[1] - mapInfo.MapMin[1])
-
-	// fmt.Println(dx, dy)
-
-	return math.Sqrt(dx*dx + dy*dy)
+	return mapInfo.GetDistance(ent1.X, ent1.Y, ent2.X, ent2.Y)
 }
 
 func (mapObj *MapObj) GetHeading(ent1 *Entity, ent2 *Entity) float64 {
@@ -122,6 +117,10 @@ func (mapObj *MapObj) GetFighterRespawnBases() *[]Entity {
 
 func (mapObj *MapObj) GetCaptureZones() *[]Entity {
 	return mapObj.getEntitiesByType("capture_zone")
+}
+
+func (mapObj *MapObj) GetAirfields() *[]Entity {
+	return mapObj.getEntitiesByType("airfield")
 }
 
 func (mapObj *MapObj) Load(host string) error {

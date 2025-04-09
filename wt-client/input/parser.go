@@ -14,6 +14,7 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 
 	input.MapLoaded = inputData.MapInfo.Valid
 	var objDistance float64
+	var nearestAirfield *client.Entity
 
 	current_ts := time.Now().Unix()
 
@@ -22,6 +23,9 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 
 		// fmt.Println("game mode", input.GameMode)
 		playerEntity := inputData.MapObj.GetPlayerEntity()
+		airfields := inputData.MapObj.GetAirfields()
+		nearestAirfield = getNearestEntity(playerEntity, airfields, inputData.MapObj, inputData.MapInfo)
+		player.LoadData(playerEntity, nearestAirfield, inputData.State, inputData.Indicators, inputData.MapInfo, inputData.MapObj)
 		enemyAircrafts := inputData.MapObj.GetAircraftsByColors(&conf.Colors.Foe.Air)
 		enemyGroundUnits := inputData.MapObj.GetGroundUnitsByColors(&conf.Colors.Foe.Ground)
 		captureZones := inputData.MapObj.GetCaptureZones()
@@ -82,7 +86,8 @@ func parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *mo
 			}
 		}
 		input.PlayerDead = input.MissionStarted && (player.Dead || shouldStayDead)
-		input.PlayerLanded = input.MissionStarted && playerEntity == nil && !player.Dead
+		// input.PlayerLanded = input.MissionStarted && playerEntity == nil && !player.Dead
+		input.PlayerLanded = player.Landed && !player.Dead
 		if player.Dead && input.GameMode == "air" {
 			shouldStayDead = true
 		}
@@ -206,6 +211,9 @@ func getCurrentVehicle() *model.Vehicle {
 func getNearestEntity(player *client.Entity, entities *[]client.Entity, mapObj *client.MapObj, mapInfo *client.MapInfo) *client.Entity {
 	var nearest *client.Entity
 	var distance, lastDistance float64
+	if len(*entities) == 0 {
+		return nil
+	}
 	for _, entity := range *entities {
 		distance = mapObj.GetDistance(player, &entity, mapInfo)
 		if lastDistance == 0.0 || distance < lastDistance {

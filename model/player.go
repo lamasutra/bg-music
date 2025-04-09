@@ -7,6 +7,7 @@ import (
 type Player interface {
 	Init()
 	Play(stream beep.Streamer)
+	SetPlaylist(playlist *[]Music)
 	PlayMusic(music *Music, c *Config, allowSame bool)
 	PlaySfx(sfx *Sfx, c *Config)
 	Speak(sentence *[]Speech, c *Config)
@@ -14,5 +15,12 @@ type Player interface {
 	GetMusicEndedChan() chan (bool)
 	GetCurrentMusic() *Music
 	GetCurrentMusicProgress() float64
+	SendControl(ctrl string)
+	VolumeUp()
+	VolumeDown()
+	Next()
+	Prev()
+	Mute()
+	Pause()
 	Close()
 }

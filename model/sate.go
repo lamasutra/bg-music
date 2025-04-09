@@ -33,6 +33,15 @@ func (c *Config) GetStateMusic(state string, index uint8) (*Music, error) {
 	return &music, nil
 }
 
+func (c *Config) GetStatePlaylist(state string) (*[]Music, error) {
+	st, err := c.GetState(state)
+	if err != nil {
+		return nil, nil
+	}
+
+	return &st.Music, nil
+}
+
 func (c *Config) GetRandomStateMusic(state string) (*Music, error) {
 	st, err := c.GetState(state)
 	if err != nil {

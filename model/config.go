@@ -8,6 +8,7 @@ import (
 type Config struct {
 	PlayerType string            `json:"player_type"`
 	ServerType string            `json:"server_type"`
+	Controls   map[string]string `json:"controls"`
 	Volume     uint8             `json:"volume"`
 	Path       string            `json:"path"`
 	Events     map[string]Event  `json:"events"`

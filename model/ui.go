@@ -6,7 +6,8 @@ type UI interface {
 	io.Writer
 	Debug(...any)
 	Error(...any)
-	SetCurrentMusicTitle(string)
-	SetCurrentMusicProgress(float64)
-	SetCurrentVolume(float64)
+	Run(func())
+	// SetCurrentMusicTitle(string)
+	// SetCurrentMusicProgress(float64)
+	// SetCurrentVolume(float64)
 }

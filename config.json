@@ -31,5 +31,13 @@
                 "path": "demo-sfx.mp3"
             }]
         }
+    },
+    "controls": {
+        "ctrl+f9": "pause",
+        "ctrl+f10": "next",
+        "ctrl+f8": "prev",
+        "ctrl+f11": "mute",
+        "ctrl++": "volume-up",
+        "ctrl+-": "volume-down"
     }
 }

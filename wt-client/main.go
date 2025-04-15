@@ -8,11 +8,10 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/lamasutra/bg-music/wt-client/input"
-	"github.com/lamasutra/bg-music/wt-client/model"
-	"github.com/lamasutra/bg-music/wt-client/player"
-	"github.com/lamasutra/bg-music/wt-client/stateMachine"
-	"github.com/lamasutra/bg-music/wt-client/ui"
+	"github.com/lamasutra/bg-music/wt-client/internal/input"
+	"github.com/lamasutra/bg-music/wt-client/internal/model"
+	"github.com/lamasutra/bg-music/wt-client/internal/player"
+	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 type cmdArgs struct {
@@ -46,7 +45,7 @@ func main() {
 	ui.Debug("your configured nickname", "`"+conf.Nickname+"`")
 
 	bgPayer := player.CreatePlayer(conf.BgPlayerType, &conf)
-	stMachine := stateMachine.New("idle", &conf.StateRules)
+	stMachine := model.NewStateMachine("idle", &conf.StateRules)
 	inputLoop := input.CreateInputLoop(&conf, stMachine, bgPayer)
 
 	// debug

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Background Music Player",
+  "outputfilename": "bg-player",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:5173",
+  "author": {
+    "name": "Andrzej Heczko",
+    "email": "andrzej.heczko@gmail.com"
+  },
+  "window": {
+    "title": "BG Music Player",
+    "width": 800,
+    "height": 600,
+    "frameless": true
+  }
+}

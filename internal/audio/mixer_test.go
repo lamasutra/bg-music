@@ -8,7 +8,6 @@ import (
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/mp3"
 	"github.com/gopxl/beep/v2/speaker"
-	"github.com/lamasutra/bg-music/internal/ui"
 )
 
 // var conf = model.Config{
@@ -20,7 +19,6 @@ import (
 
 func TestMixer(t *testing.T) {
 	return
-	ui.CreateUI("cli", &assets)
 	// CreatePlayer("beep")
 
 	format := beep.Format{

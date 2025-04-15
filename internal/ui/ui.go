@@ -2,33 +2,23 @@ package ui
 
 import (
 	"embed"
-
-	"github.com/lamasutra/bg-music/model"
 )
 
-var state model.UI
+type UI interface {
+	Run(func())
+}
 
-func CreateUI(ui string, assets *embed.FS, icon []byte, onStartup func()) {
-	switch ui {
+var ui UI
+
+func CreateNew(uiType string, assets *embed.FS, icon []byte, onStartup func()) {
+	switch uiType {
 	case "tui":
-		state = NewTui()
+		ui = NewTui()
 	case "cli":
-		state = NewCli()
+		ui = NewCli()
 	default:
-		state = NewGui(assets, icon)
+		ui = NewGui(assets, icon)
 	}
 
-	state.Run(onStartup)
-}
-
-func Debug(args ...any) {
-	state.Debug(args...)
-}
-
-func Error(args ...any) {
-	state.Error(args...)
-}
-
-func GetState() *model.UI {
-	return &state
+	ui.Run(onStartup)
 }

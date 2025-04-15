@@ -1,6 +1,6 @@
 package audio
 
-import "github.com/lamasutra/bg-music/internal/ui"
+import "github.com/lamasutra/bg-music/pkg/logger"
 
 type mixer struct {
 	sequencers *[]sequencer
@@ -14,12 +14,12 @@ func NewBeepMixer(sequencers *[]sequencer) *mixer {
 
 // Add adds Streamers to the Mixer.
 // func (m *mixer) Add(s ...*sequencer) {
-// 	ui.Debug("mixer appending", s)
+// 	logger.Debug("mixer appending", s)
 // 	m.sequencers = append(m.sequencers, s...)
 // }
 
 func (m *mixer) Stream(samples [][2]float64) (n int, ok bool) {
-	ui.Debug("mixer stream", len(samples))
+	logger.Debug("mixer stream", len(samples))
 	if len((*m.sequencers)) == 0 {
 		// return 0, true
 		return len(samples), true
@@ -36,7 +36,7 @@ func (m *mixer) Stream(samples [][2]float64) (n int, ok bool) {
 		snMax := 0
 		for si := 0; si < len((*m.sequencers)); si++ {
 			// Mix the stream
-			ui.Debug("seq ", si)
+			logger.Debug("seq ", si)
 			sn, sok := (*m.sequencers)[si].Stream(tmp[:toStream])
 			for i := range tmp[:sn] {
 				samples[i][0] += tmp[i][0]

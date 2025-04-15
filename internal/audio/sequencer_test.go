@@ -6,7 +6,6 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/speaker"
-	"github.com/lamasutra/bg-music/internal/ui"
 )
 
 func TestSequencerStream(t *testing.T) {
@@ -16,7 +15,6 @@ func TestSequencerStream(t *testing.T) {
 
 	seq1 := NewBeepSequencer(3, "seq1")
 	seq2 := NewBeepSequencer(3, "seq2")
-	ui.CreateUI("cli", &assets)
 
 	format := beep.Format{
 		SampleRate: 44100,

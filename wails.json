@@ -9,5 +9,11 @@
   "author": {
     "name": "Andrzej Heczko",
     "email": "andrzej.heczko@gmail.com"
+  },
+  "window": {
+    "title": "BG Music Player",
+    "width": 800,
+    "height": 600,
+    "frameless": true
   }
 }

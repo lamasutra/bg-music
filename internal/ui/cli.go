@@ -2,8 +2,9 @@ package ui
 
 import (
 	"fmt"
-	"strings"
-	"time"
+
+	"github.com/lamasutra/bg-music/pkg/events"
+	"github.com/lamasutra/bg-music/pkg/logger"
 )
 
 type cliState struct {
@@ -14,37 +15,20 @@ func NewCli() *cliState {
 }
 
 func (s *cliState) Run(onStartup func()) {
+	events.Listen("log", "cli", s.renderMessage)
+
 	onStartup()
 }
 
-func (s *cliState) Debug(args ...any) {
-	length := len(args) + 1
-	buf := make([]string, length)
-	buf[0] = time.Now().Format("15:04:05.000")
-	for i, val := range args {
-		buf[i+1] = fmt.Sprint(val)
+func (s *cliState) renderMessage(args ...any) {
+	if len(args) != 1 {
+		panic("invalid arguments count, cannot render message")
 	}
-	fmt.Println(strings.Join(buf, " "))
-}
 
-func (s *cliState) Write(p []byte) (n int, err error) {
-	return fmt.Println(string(p))
-}
+	msg, ok := args[0].(logger.MessageRenderer)
+	if !ok {
+		panic("message is not renderer")
+	}
 
-func (s *cliState) Error(args ...any) {
-	newArgs := []any{"ERR:"}
-	newArgs = append(newArgs, args...)
-	s.Debug(newArgs...)
-}
-
-func (s *cliState) SetCurrentMusicProgress(progress float64) {
-
-}
-
-func (s *cliState) SetCurrentMusicTitle(title string) {
-
-}
-
-func (s *cliState) SetCurrentVolume(volume float64) {
-
+	fmt.Println(msg.Render())
 }

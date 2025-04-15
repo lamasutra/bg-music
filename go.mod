@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/lipgloss v1.0.0
+	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/getlantern/systray v1.2.2
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/wailsapp/wails/v2 v2.10.1

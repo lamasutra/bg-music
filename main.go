@@ -14,13 +14,14 @@ import (
 	"github.com/lamasutra/bg-music/internal/audio"
 	"github.com/lamasutra/bg-music/internal/devices"
 	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/pkg/model"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
-//go:embed assets/icons/icon-dark.png
+//go:embed assets/icons/music-app-systray-icon.ico
 var icon []byte
 
 type cmdArgs struct {
@@ -44,7 +45,7 @@ func main() {
 		panic(err)
 	}
 
-	initUI(cmdArgs, &assets, icon, func() {
+	createUI(cmdArgs, &assets, icon, func() {
 		onStartup(config)
 	})
 }
@@ -56,17 +57,17 @@ func onStartup(config *model.Config) {
 
 	defer mp.Close()
 
-	go initServer(config, mp)
+	go runServer(config, mp)
 
-	initKeyboardListener(config.Controls, mp)
+	go runKeyboardListener(config.Controls, mp)
 
 	for {
 		time.Sleep(time.Second)
 	}
 }
 
-func initServer(config *model.Config, mp model.Player) {
-	ui.Debug("Running as ", config.PlayerType, " ", config.ServerType)
+func runServer(config *model.Config, mp audio.Player) {
+	logger.Debug("Running as ", config.PlayerType, " ", config.ServerType)
 
 	server, err := api.CreateServer(config.ServerType)
 	if err != nil {
@@ -78,7 +79,7 @@ func initServer(config *model.Config, mp model.Player) {
 	server.Serve(config, mp)
 }
 
-func initUI(args *cmdArgs, assets *embed.FS, icon []byte, onStartup func()) {
+func createUI(args *cmdArgs, assets *embed.FS, icon []byte, onStartup func()) {
 	uiType := "gui"
 	if *args.tui {
 		uiType = "tui"
@@ -86,11 +87,11 @@ func initUI(args *cmdArgs, assets *embed.FS, icon []byte, onStartup func()) {
 		uiType = "cli"
 	}
 
-	ui.CreateUI(uiType, assets, icon, onStartup)
+	ui.CreateNew(uiType, assets, icon, onStartup)
 }
 
-func initKeyboardListener(controls map[string]string, mp model.Player) {
-	go devices.WatchInput(controls, mp)
+func runKeyboardListener(controls map[string]string, mp audio.Player) {
+	devices.WatchInput(controls, mp)
 }
 
 func registerFlags() *cmdArgs {

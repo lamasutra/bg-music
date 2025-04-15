@@ -9,8 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/internal/audio"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/pkg/model"
 )
 
 type PipeServer struct {
@@ -25,7 +26,7 @@ func NewPipeServer() *PipeServer {
 	return &PipeServer{}
 }
 
-func (p *PipeServer) Serve(conf *model.Config, player model.Player) {
+func (p *PipeServer) Serve(conf *model.Config, player audio.Player) {
 	sleepTime := time.Millisecond * 100
 	p.controlChannel = make(chan string)
 	p.stateChannel = make(chan string)
@@ -79,7 +80,7 @@ func handlePipeFile(ch chan string, filename string, sleepTime time.Duration) {
 
 	pipeFile, err := os.Open(filename)
 	if err != nil {
-		ui.Debug(err)
+		logger.Debug(err)
 		return
 	}
 	pipeFileReader := bufio.NewReader(pipeFile)
@@ -105,7 +106,7 @@ func (p *PipeServer) loadConfig(data *LoadData) {
 	p.state.config.States = data.States
 
 	str, _ := json.MarshalIndent(p.state.config, "", "  ")
-	ui.Debug(string(str))
+	logger.Debug(string(str))
 
 	//
 	// fmt.Println("loaded:", string(str))
@@ -115,17 +116,17 @@ func (p *PipeServer) handleControl(control string) error {
 	req := &Request{}
 	err := json.Unmarshal([]byte(control), req)
 	if err != nil {
-		ui.Error(err, req)
+		logger.Error(err, req)
 		return err
 	}
-	ui.Debug("Received control:", req.Action)
+	logger.Debug("Received control:", req.Action)
 
 	switch req.Action {
 	case "load":
 		loadRequest := &LoadRequest{}
 		err := json.Unmarshal([]byte(control), loadRequest)
 		if err != nil {
-			ui.Error("data", err)
+			logger.Error("data", err)
 			return err
 		}
 		p.loadConfig(&loadRequest.Data)

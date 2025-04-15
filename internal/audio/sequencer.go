@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gopxl/beep/v2"
-	"github.com/lamasutra/bg-music/internal/ui"
+	"github.com/lamasutra/bg-music/pkg/logger"
 )
 
 type sequencer struct {
@@ -61,7 +61,7 @@ func (s *sequencer) shift() {
 
 func (s *sequencer) Stream(samples [][2]float64) (n int, ok bool) {
 	if s.closed {
-		ui.Debug(fmt.Sprintf("seq(%s):closed", s.code))
+		logger.Debug(fmt.Sprintf("seq(%s):closed", s.code))
 		return 0, false
 	}
 
@@ -90,7 +90,7 @@ func (s *sequencer) Stream(samples [][2]float64) (n int, ok bool) {
 
 		n, ok = n+sn, ok || sok
 		if !sok {
-			ui.Debug(fmt.Sprintf("seq(%s):switching stream", s.code))
+			logger.Debug(fmt.Sprintf("seq(%s):switching stream", s.code))
 			if !s.locked {
 				s.shift()
 			}
@@ -114,10 +114,10 @@ func (s *sequencer) Err() error {
 }
 
 func (s *sequencer) ReplaceCurrent(stream beep.Streamer) {
-	ui.Debug(fmt.Sprintf("seq(%s):replacing stream %p, buffer size: %d", s.code, stream, s.size))
+	logger.Debug(fmt.Sprintf("seq(%s):replacing stream %p, buffer size: %d", s.code, stream, s.size))
 	closer, ok := s.buffer[0].(beep.StreamCloser)
 	if ok {
-		ui.Debug(fmt.Sprintf("seq(%s):closing stream %p, buffer size: %d", s.code, stream, s.size))
+		logger.Debug(fmt.Sprintf("seq(%s):closing stream %p, buffer size: %d", s.code, stream, s.size))
 		closer.Close()
 	}
 	s.buffer[0] = stream
@@ -132,7 +132,7 @@ func (s *sequencer) ReplaceCurrent(stream beep.Streamer) {
 func (s *sequencer) Append(stream beep.Streamer) {
 	s.buffer[s.size] = stream
 	s.size++
-	ui.Debug(fmt.Sprintf("seq(%s):appending stream %p, buffer size: %d", s.code, stream, s.size))
+	logger.Debug(fmt.Sprintf("seq(%s):appending stream %p, buffer size: %d", s.code, stream, s.size))
 }
 
 func (s *sequencer) GetCurrentStreamer() beep.Streamer {

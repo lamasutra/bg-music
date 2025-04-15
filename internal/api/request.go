@@ -1,6 +1,6 @@
 package api
 
-import "github.com/lamasutra/bg-music/model"
+import "github.com/lamasutra/bg-music/pkg/model"
 
 type Request struct {
 	Action string `json:"action"`

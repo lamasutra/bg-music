@@ -5,18 +5,18 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/internal/audio"
+	"github.com/lamasutra/bg-music/pkg/logger"
 )
 
-func WatchInput(controls map[string]string, player model.Player) {
+func WatchInput(controls map[string]string, player audio.Player) {
 	for {
 		pyInputListener(controls, player)
 		time.Sleep(time.Second)
 	}
 }
 
-func pyInputListener(controls map[string]string, player model.Player) {
+func pyInputListener(controls map[string]string, player audio.Player) {
 	cmd := exec.Command("python3", "listener.py")
 
 	stdout, err := cmd.StdoutPipe()
@@ -29,11 +29,11 @@ func pyInputListener(controls map[string]string, player model.Player) {
 	}
 
 	scanner := bufio.NewScanner(stdout)
-	ui.Debug("Listening for global keypresses (Ctrl+C to quit)...")
+	logger.Debug("Listening for global keypresses (Ctrl+C to quit)...")
 
 	for scanner.Scan() {
 		combo := scanner.Text()
-		ui.Debug("Key Pressed:", combo)
+		logger.Debug("Key Pressed:", combo)
 		ctrl, ok := controls[combo]
 		if !ok {
 			continue // Ignore unknown keys
@@ -46,5 +46,5 @@ func pyInputListener(controls map[string]string, player model.Player) {
 	}
 
 	cmd.Wait()
-	ui.Error("Stopped listening for global keypresses.")
+	logger.Error("Stopped listening for global keypresses.")
 }

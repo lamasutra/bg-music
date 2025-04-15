@@ -9,6 +9,10 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/lamasutra/bg-music/internal/ui/gui"
+	"github.com/lamasutra/bg-music/pkg/events"
+
+	bgplogger "github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/application"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -20,33 +24,54 @@ import (
 )
 
 type guiState struct {
-	ctx       context.Context // app
-	onStartup func()
-	assets    *embed.FS
-	icon      []byte
-	visible   bool
+	ctx            context.Context // app
+	onStartup      func()
+	assets         *embed.FS
+	icon           []byte
+	visible        bool
+	playerControls *gui.PlayerControls
+	mShow          *systray.MenuItem
 }
 
-func (a *guiState) startup(ctx context.Context) {
-	a.ctx = ctx
-	runtime.Hide(a.ctx)
-	a.onStartup()
+func (s *guiState) startup(ctx context.Context) {
+	s.ctx = ctx
+	runtime.Hide(s.ctx)
+	events.ListenAll("gui", s.eventDispatcher)
+	events.Listen("log", "cli", s.renderMessage)
+	s.onStartup()
+}
+
+func (s *guiState) renderMessage(args ...any) {
+	if len(args) != 1 {
+		panic("invalid arguments count, cannot render message")
+	}
+
+	msg, ok := args[0].(bgplogger.MessageRenderer)
+	if !ok {
+		panic("message is not renderer")
+	}
+
+	fmt.Println(msg.Render())
+}
+
+func (s *guiState) eventDispatcher(event string, values ...any) {
+	runtime.EventsEmit(s.ctx, event, values...)
 }
 
 // domReady is called after front-end resources have been loaded
-func (a guiState) domReady(ctx context.Context) {
+func (s guiState) domReady(ctx context.Context) {
 	// Add your action here
 }
 
 // beforeClose is called when the application is about to quit,
 // either by clicking the window close button or calling runtime.Quit.
 // Returning true will cause the application to continue, false will continue shutdown as normal.
-func (a *guiState) beforeClose(ctx context.Context) (prevent bool) {
+func (s *guiState) beforeClose(ctx context.Context) (prevent bool) {
 	return false
 }
 
 // shutdown is called at application termination
-func (a *guiState) shutdown(ctx context.Context) {
+func (s *guiState) shutdown(ctx context.Context) {
 	// Perform your teardown here
 }
 
@@ -63,6 +88,13 @@ func NewGui(assets *embed.FS, icon []byte) *guiState {
 func (s *guiState) Run(onStartup func()) {
 	s.onStartup = onStartup
 
+	// theme := runtime.Theme(s.ctx)
+	// if theme == runtime.ThemeDark {
+	// 	println("Dark mode is active")
+	// } else {
+	// 	println("Light mode is active")
+	// }
+
 	app := s.createApplication()
 
 	err := app.Run()
@@ -71,21 +103,31 @@ func (s *guiState) Run(onStartup func()) {
 	}
 }
 
+func (s *guiState) MinimizeWindow() {
+	runtime.WindowMinimise(s.ctx)
+}
+
+func (s *guiState) CloseApp() {
+	runtime.Quit(s.ctx)
+}
+
 func (s *guiState) createApplication() *application.Application {
+	s.playerControls = gui.NewPlayerControls()
+
 	// Create application with options
 	app := application.NewWithOptions(
 		&options.App{
 			Title:             "Background Music Player",
-			Width:             1024,
-			Height:            768,
-			MinWidth:          1024,
-			MinHeight:         768,
-			MaxWidth:          1280,
-			MaxHeight:         800,
+			Width:             500,
+			Height:            304,
+			MinWidth:          500,
+			MinHeight:         304,
+			MaxWidth:          500,
+			MaxHeight:         304,
 			DisableResize:     false,
 			Fullscreen:        false,
-			Frameless:         false,
-			StartHidden:       false,
+			Frameless:         true,
+			StartHidden:       true,
 			HideWindowOnClose: false,
 			BackgroundColour:  &options.RGBA{R: 255, G: 255, B: 255, A: 255},
 			AssetServer: &assetserver.Options{
@@ -101,10 +143,11 @@ func (s *guiState) createApplication() *application.Application {
 			WindowStartState: options.Normal,
 			Bind: []interface{}{
 				s,
+				s.playerControls,
 			},
 			Linux: &linux.Options{
 				Icon:        s.icon,
-				ProgramName: "Background Music Player",
+				ProgramName: "BG Music Player",
 			},
 			// Windows platform specific options
 			Windows: &windows.Options{
@@ -195,8 +238,20 @@ func (s *guiState) createSystray() {
 	systray.Register(onReady, onExit)
 }
 
+func (s *guiState) ToggleVisibility() {
+	if !s.visible {
+		runtime.Show(s.ctx)
+		s.mShow.SetTitle("Hide")
+		s.visible = true
+	} else {
+		runtime.Hide(s.ctx)
+		s.mShow.SetTitle("Show")
+		s.visible = false
+	}
+}
+
 func (s *guiState) handleSystray() {
-	mShow := systray.AddMenuItem("Show", "Show the app")
+	s.mShow = systray.AddMenuItem("Show", "Show the app")
 	systray.AddSeparator()
 	mOptions := systray.AddMenuItem("Options", "Show options")
 	systray.AddSeparator()
@@ -204,17 +259,9 @@ func (s *guiState) handleSystray() {
 
 	for {
 		select {
-		case <-mShow.ClickedCh:
-			if !s.visible {
-				runtime.Show(s.ctx)
-				mShow.SetTitle("Hide")
-				s.visible = true
-			} else {
-				runtime.Hide(s.ctx)
-				mShow.SetTitle("Show")
-				s.visible = false
-			}
+		case <-s.mShow.ClickedCh:
 			// runtime.Focus(s.ctx)
+			s.ToggleVisibility()
 		case <-mOptions.ClickedCh:
 			runtime.Show(s.ctx)
 		case <-mQuit.ClickedCh:

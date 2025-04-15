@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/internal/audio"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/pkg/model"
 )
 
 type ServerState struct {
 	state  string
 	config *model.Config
-	player model.Player
+	player audio.Player
 }
 
 type Server interface {
-	Serve(*model.Config, model.Player)
+	Serve(*model.Config, audio.Player)
 	Close()
 }
 
@@ -32,29 +33,29 @@ func CreateServer(serverType string) (Server, error) {
 }
 
 func triggerEvent(event string, srv *ServerState) error {
-	ui.Debug("Received event:", event)
+	logger.Debug("Received event:", event)
 	ev, err := srv.config.GetEvent(event)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 		return err
 	}
 	if len(ev.Sentence) > 0 {
 		sentence, err := ev.GetRandomSentence()
 		if err != nil {
-			ui.Error(err)
+			logger.Error(err)
 			return err
 		}
 
 		err = speak(sentence, srv)
 		if err != nil {
-			ui.Error(err)
+			logger.Error(err)
 			return err
 		}
 
 	} else {
 		sfx, err := ev.GetRandomSfx()
 		if err != nil {
-			ui.Error(err)
+			logger.Error(err)
 			return err
 		}
 
@@ -66,7 +67,7 @@ func triggerEvent(event string, srv *ServerState) error {
 
 func speak(sentence string, srv *ServerState) error {
 	seq := strings.Split(sentence, ",")
-	ui.Debug(fmt.Sprintf("I will speak `%s` for you", sentence))
+	logger.Debug(fmt.Sprintf("I will speak `%s` for you", sentence))
 	narSeq := make([]model.Speech, len(seq))
 	for i, key := range seq {
 		val, ok := srv.config.Narrate[key]
@@ -84,21 +85,21 @@ func speak(sentence string, srv *ServerState) error {
 }
 
 func changeState(state string, srv *ServerState) error {
-	ui.Debug("Received state:", state)
+	logger.Debug("Received state:", state)
 	if srv.state == state {
-		ui.Debug("already ", state)
+		logger.Debug("already ", state)
 		return nil
 	}
 	srv.state = state
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 		return err
 	}
 	srv.player.PlayMusic(music, srv.config, false)
 	playlist, err := srv.config.GetStatePlaylist(state)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 		return err
 	}
 	srv.player.SetPlaylist(playlist)
@@ -107,15 +108,15 @@ func changeState(state string, srv *ServerState) error {
 }
 
 func changeMusic(state string, srv *ServerState) error {
-	ui.Debug("changing music")
+	logger.Debug("changing music")
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 		return err
 	}
 	st, err := srv.config.GetState(state)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 		return err
 	}
 	allowSame := len(st.Music) == 1

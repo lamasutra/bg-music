@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"golang.org/x/term"
 )
 
@@ -73,55 +74,15 @@ func NewTui() *tuiModel {
 	return tm
 }
 
-func (m *tuiModel) Write(p []byte) (n int, err error) {
-	m.log = append(m.log, string(p))
-
-	return len(p), nil
-}
-
-func (m *tuiModel) Debug(args ...any) {
-	length := len(args) + 1
-	buf := make([]string, length)
-	buf[0] = time.Now().Format("15:04:05.000")
-	for i, val := range args {
-		buf[i+1] = fmt.Sprint(val)
-	}
-	str := strings.Join(buf, " ")
-	m.logFile.WriteString(str + "\n")
-	m.log = append(m.log, str)
-	if len(m.log) > 100 {
-		newLog := m.log[1:]
-		m.log = newLog
-	}
-}
-
-func (m *tuiModel) Error(args ...any) {
-	newArgs := []any{"ERR:"}
-	newArgs = append(newArgs, args...)
-	m.Debug(newArgs...)
-}
-
-func (m *tuiModel) SetCurrentMusicProgress(progress float64) {
-	m.music.value = progress
-}
-
-func (m *tuiModel) SetCurrentMusicTitle(title string) {
-	m.music.title = title
-}
-
-func (m *tuiModel) SetCurrentVolume(volume float64) {
-	m.volume.value = volume
-}
-
 func (m *tuiModel) Run(onStartup func()) {
 	onStartup()
 }
 
 func (m *tuiModel) Init() tea.Cmd {
 	if term.IsTerminal(0) {
-		Debug("in a term")
+		logger.Debug("in a term")
 	} else {
-		Debug("not in a term")
+		logger.Debug("not in a term")
 	}
 	width, height, err := term.GetSize(0)
 	if err != nil {
@@ -132,7 +93,7 @@ func (m *tuiModel) Init() tea.Cmd {
 		height -= 10
 	}
 
-	Debug("term size: ", width, height)
+	logger.Debug("term size: ", width, height)
 
 	vp, _ := logsViewport(width, height)
 	renderer, _ := logsRenderer(&vp, width)

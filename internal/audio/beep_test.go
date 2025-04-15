@@ -1,18 +1,16 @@
 package audio
 
 import (
-	"embed"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/speaker"
-	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/pkg/model"
 )
 
-var assets embed.FS
 var conf = model.Config{
 	PlayerType: "beep",
 	ServerType: "http",
@@ -121,7 +119,6 @@ func TestMusic(t *testing.T) {
 
 	// return
 
-	ui.CreateUI("cli", &assets)
 	b := CreatePlayer("beep")
 	b.PlayMusic(&music1, &conf, true)
 	i := 0
@@ -151,7 +148,7 @@ func TestMusic(t *testing.T) {
 		}
 	}
 
-	ui.Debug("close")
+	logger.Debug("close")
 	b.Close()
 }
 
@@ -159,8 +156,6 @@ func TestCrossfade(t *testing.T) {
 	t.Log("testing crossfade")
 
 	return
-
-	ui.CreateUI("cli", &assets)
 
 	format := beep.Format{SampleRate: 44100}
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
@@ -218,7 +213,6 @@ func TestSpeech(t *testing.T) {
 
 	// conf.Events["test"] = event
 
-	ui.CreateUI("cli", &assets)
 	b := CreatePlayer("beep")
 	// b.SetVolume(100)
 

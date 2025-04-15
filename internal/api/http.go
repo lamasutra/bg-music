@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lamasutra/bg-music/internal/ui"
-	"github.com/lamasutra/bg-music/model"
+	"github.com/lamasutra/bg-music/internal/audio"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/pkg/model"
 )
 
 type HttpServer struct {
@@ -24,7 +25,7 @@ func NewHttpServer() *HttpServer {
 	return instance
 }
 
-func (h *HttpServer) Serve(conf *model.Config, player model.Player) {
+func (h *HttpServer) Serve(conf *model.Config, player audio.Player) {
 	sleepTime := time.Millisecond * 100
 	serverState := ServerState{
 		config: conf,
@@ -38,7 +39,7 @@ func (h *HttpServer) Serve(conf *model.Config, player model.Player) {
 	changeState("idle", h.state)
 
 	gin.SetMode(gin.ReleaseMode)
-	gin.DefaultWriter = *ui.GetState()
+	// gin.DefaultWriter = *ui.GetState()
 
 	router := gin.Default()
 	router.POST("/control/:action", controlHandler)
@@ -71,17 +72,17 @@ func (h *HttpServer) loadConfig(data *LoadData) {
 	h.state.config.Narrate = data.Narrate
 
 	str, _ := json.MarshalIndent(h.state.config, "", "  ")
-	ui.Debug(string(str))
+	logger.Debug(string(str))
 }
 
 func controlHandler(c *gin.Context) {
 	action := c.Param("action")
 
-	ui.Debug("Received control:", action)
+	logger.Debug("Received control:", action)
 
 	switch action {
 	case "load":
-		ui.Debug("control@load")
+		logger.Debug("control@load")
 		data := LoadData{}
 		if err := c.ShouldBindJSON(&data); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -92,7 +93,7 @@ func controlHandler(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 		return
 	case "next":
-		ui.Debug("control@next")
+		logger.Debug("control@next")
 		changeMusic(instance.state.state, instance.state)
 		c.Status(http.StatusNoContent)
 		return
@@ -116,7 +117,7 @@ func eventHandler(c *gin.Context) {
 func speakHandler(c *gin.Context) {
 	sentence, ok := c.GetQuery("sentence")
 	if !ok {
-		ui.Error("sentence not ok")
+		logger.Error("sentence not ok")
 		return
 	}
 
@@ -129,5 +130,5 @@ func speakHandler(c *gin.Context) {
 }
 
 func (h *HttpServer) Close() {
-	ui.Debug("close for http is not supported")
+	logger.Debug("close for http is not supported")
 }

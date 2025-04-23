@@ -182,10 +182,10 @@ func TestCrossfade(t *testing.T) {
 	// crossfaded.Stream(samples)
 
 	// streamer1.Stream(samples)
-	// ui.Debug(samples)
+	// logger.Debug(samples)
 
 	// streamer1.Stream(samples)
-	// ui.Debug(samples)
+	// logger.Debug(samples)
 	i := 0
 	for {
 		fmt.Println(i)

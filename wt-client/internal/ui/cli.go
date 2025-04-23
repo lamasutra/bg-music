@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lamasutra/bg-music/wt-client/internal/types"
+	"github.com/lamasutra/bg-music/wt-client/internal/model"
 )
 
 type cliState struct {
@@ -31,6 +31,6 @@ func (s *cliState) Error(args ...any) {
 	s.Debug(newArgs...)
 }
 
-func (s *cliState) Input(in *types.WtInput) {
+func (s *cliState) Input(in *model.WtInput) {
 	s.Debug(*in)
 }

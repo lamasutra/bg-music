@@ -3,21 +3,25 @@ package ui
 import (
 	"fmt"
 
+	"github.com/lamasutra/bg-music/internal/app"
 	"github.com/lamasutra/bg-music/pkg/events"
 	"github.com/lamasutra/bg-music/pkg/logger"
 )
 
 type cliState struct {
+	app *app.AppState
 }
 
-func NewCli() *cliState {
-	return &cliState{}
+func NewCli(a *app.AppState) *cliState {
+	return &cliState{
+		app: a,
+	}
 }
 
-func (s *cliState) Run(onStartup func()) {
+func (s *cliState) Run(onStartup func(a *app.AppState)) {
 	events.Listen("log", "cli", s.renderMessage)
 
-	onStartup()
+	onStartup(s.app)
 }
 
 func (s *cliState) renderMessage(args ...any) {

@@ -56,7 +56,7 @@ func (p *PipeServer) Serve(conf *model.Config, player audio.Player) {
 		case event := <-p.eventChannel:
 			triggerEvent(event, p.state)
 		case <-serverState.player.GetMusicEndedChan():
-			changeMusic(p.state.state, p.state)
+			changeMusic(p.state.state, p.state, true)
 		default:
 			time.Sleep(sleepTime)
 		}
@@ -131,7 +131,7 @@ func (p *PipeServer) handleControl(control string) error {
 		}
 		p.loadConfig(&loadRequest.Data)
 	case "next":
-		changeMusic(p.state.state, p.state)
+		changeMusic(p.state.state, p.state, true)
 	default:
 		return errors.New("unknown action")
 	}

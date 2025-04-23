@@ -12,6 +12,7 @@ require (
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/getlantern/systray v1.2.2
 	github.com/gopxl/beep/v2 v2.1.1
+	github.com/holoplot/go-evdev v0.0.0-20240306072622-217e18f17db1
 	github.com/wailsapp/wails/v2 v2.10.1
 	golang.org/x/term v0.30.0
 )

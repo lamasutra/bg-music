@@ -44,7 +44,7 @@ func (s *sequencer) shift() {
 	i := 0
 	bufferSize := len(s.buffer)
 	newBuffer := make([]beep.Streamer, bufferSize)
-	// ui.Debug(fmt.Sprintf("seq(%s):relocating %d of seq: %p", s.code, 1, s))
+	// logger.Debug(fmt.Sprintf("seq(%s):relocating %d of seq: %p", s.code, 1, s))
 	for i < bufferSize {
 		if i+1 < bufferSize {
 			newBuffer[i] = s.buffer[i+1]
@@ -53,7 +53,7 @@ func (s *sequencer) shift() {
 	}
 	s.size--
 	s.buffer = newBuffer
-	// ui.Debug(fmt.Sprintf(" = new size %d", s.size))
+	// logger.Debug(fmt.Sprintf(" = new size %d", s.size))
 	if s.buffer[0] == nil {
 		s.buffer[0] = s.dummy
 	}
@@ -67,17 +67,17 @@ func (s *sequencer) Stream(samples [][2]float64) (n int, ok bool) {
 
 	// stream silence
 	if s.size == 0 || s.locked {
-		// ui.Debug(fmt.Sprintf("seq(%s):stream:empty", s.code))
+		// logger.Debug(fmt.Sprintf("seq(%s):stream:empty", s.code))
 		return s.dummy.Stream(samples)
 	}
 
 	// if s.code == "narrator" {
-	// ui.Debug(fmt.Sprintf("seq(%s):stream:buffer", s.code))
+	// logger.Debug(fmt.Sprintf("seq(%s):stream:buffer", s.code))
 	// }
-	// ui.Debug(fmt.Sprintf("seq(%s):stream:buffer", s.code))
+	// logger.Debug(fmt.Sprintf("seq(%s):stream:buffer", s.code))
 	for len(samples) > 0 {
 		if s.buffer[0] == nil {
-			// ui.Debug(fmt.Sprintf("seq(%s):buffer[0]:nil n(%d) samples", s.code, n))
+			// logger.Debug(fmt.Sprintf("seq(%s):buffer[0]:nil n(%d) samples", s.code, n))
 			s.size = 0
 			return s.dummy.Stream(samples)
 			// return 32, true
@@ -86,7 +86,7 @@ func (s *sequencer) Stream(samples [][2]float64) (n int, ok bool) {
 		}
 		sn, sok := s.buffer[0].Stream(samples)
 		samples = samples[sn:]
-		// ui.Debug(fmt.Sprintf("seq(%s):stream:buffer[0]:sn %d, ok %t", s.code, sn, sok))
+		// logger.Debug(fmt.Sprintf("seq(%s):stream:buffer[0]:sn %d, ok %t", s.code, sn, sok))
 
 		n, ok = n+sn, ok || sok
 		if !sok {
@@ -97,12 +97,12 @@ func (s *sequencer) Stream(samples [][2]float64) (n int, ok bool) {
 			ok = true
 		}
 		// if !ok {
-		// 	ui.Debug("! ok")
+		// 	logger.Debug("! ok")
 		// }
 	}
 
 	// if s.code == "narrator" {
-	// ui.Debug("ok %d %d", n, ok)
+	// logger.Debug("ok %d %d", n, ok)
 	// }
 
 	return n, ok

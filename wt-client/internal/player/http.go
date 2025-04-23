@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/wt-client/internal/model"
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 type HttPlayer struct {
@@ -51,7 +51,7 @@ func (h *HttPlayer) SendState(state string) error {
 	}
 	req.Body.Close()
 
-	ui.Debug("state sent", state)
+	logger.Debug("state sent", state)
 
 	return err
 }
@@ -67,13 +67,13 @@ func (h *HttPlayer) TriggerEvent(event string) error {
 	}
 	req.Body.Close()
 
-	ui.Debug("event triggered", event)
+	logger.Debug("event triggered", event)
 
 	return err
 }
 
 func (h *HttPlayer) ChangeMusic() error {
-	req, err := http.NewRequest("POST", h.host+"control/next", bytes.NewBufferString(""))
+	req, err := http.NewRequest("POST", h.host+"control/next", bytes.NewBufferString("{\"allowSame\":false}"))
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (h *HttPlayer) ChangeMusic() error {
 	}
 	req.Body.Close()
 
-	ui.Debug("changed music")
+	logger.Debug("changed music")
 
 	return err
 }
@@ -99,7 +99,7 @@ func (h *HttPlayer) Speak(sentence string) error {
 	}
 	req.Body.Close()
 
-	ui.Debug("speak sent", sentence)
+	logger.Debug("speak sent", sentence)
 
 	return err
 }
@@ -107,12 +107,12 @@ func (h *HttPlayer) Speak(sentence string) error {
 func (h *HttPlayer) Init(c *model.Config) {
 	h.client = &http.Client{}
 	h.host = c.BgPlayerHost
-	ui.Debug("waiting for connection to bg player")
+	logger.Debug("waiting for connection to bg player")
 
 	for {
 		resp, err := h.client.Get(c.BgPlayerHost)
 		if err != nil {
-			ui.Error("connection not ready")
+			logger.Error("connection not ready")
 		} else {
 			resp.Body.Close()
 			break
@@ -128,10 +128,10 @@ func (h *HttPlayer) Init(c *model.Config) {
 		Narrate: defaultTheme.Narrate,
 	}
 
-	ui.Debug("Sending default theme events and states...")
+	logger.Debug("Sending default theme events and states...")
 	err := h.SendEventStates(&ec)
 	if err != nil {
-		ui.Error(err)
+		logger.Error(err)
 	}
 	time.Sleep(time.Millisecond * 50)
 }

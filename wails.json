@@ -12,8 +12,8 @@
   },
   "window": {
     "title": "BG Music Player",
-    "width": 800,
-    "height": 600,
+    "width": 500,
+    "height": 304,
     "frameless": true
   }
 }

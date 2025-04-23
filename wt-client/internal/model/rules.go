@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
+	"github.com/lamasutra/bg-music/pkg/logger"
 )
 
 type StateRules map[string]StateRule
@@ -19,13 +19,13 @@ func (sr *StateRules) Read(path string) error {
 	data, err := os.ReadFile(path)
 
 	if err != nil {
-		ui.Error("Cannot open rules file", path)
+		logger.Error("Cannot open rules file", path)
 		return err
 	}
 
 	err = json.Unmarshal(data, &sr)
 	if err != nil {
-		ui.Error("Cannot decode json", err)
+		logger.Error("Cannot decode json", err)
 		return err
 	}
 

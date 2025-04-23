@@ -6,12 +6,8 @@ export function CloseApp() {
   return window['go']['ui']['guiState']['CloseApp']();
 }
 
-export function Debug(arg1) {
-  return window['go']['ui']['guiState']['Debug'](arg1);
-}
-
-export function Error(arg1) {
-  return window['go']['ui']['guiState']['Error'](arg1);
+export function GetWindowSize() {
+  return window['go']['ui']['guiState']['GetWindowSize']();
 }
 
 export function MinimizeWindow() {
@@ -22,10 +18,10 @@ export function Run(arg1) {
   return window['go']['ui']['guiState']['Run'](arg1);
 }
 
-export function ToggleVisibility() {
-  return window['go']['ui']['guiState']['ToggleVisibility']();
+export function SetWindowSize(arg1, arg2) {
+  return window['go']['ui']['guiState']['SetWindowSize'](arg1, arg2);
 }
 
-export function Write(arg1) {
-  return window['go']['ui']['guiState']['Write'](arg1);
+export function ToggleVisibility() {
+  return window['go']['ui']['guiState']['ToggleVisibility']();
 }

@@ -11,8 +11,8 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/lamasutra/bg-music/internal/api"
+	"github.com/lamasutra/bg-music/internal/app"
 	"github.com/lamasutra/bg-music/internal/audio"
-	"github.com/lamasutra/bg-music/internal/devices"
 	"github.com/lamasutra/bg-music/internal/ui"
 	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/pkg/model"
@@ -24,12 +24,6 @@ var assets embed.FS
 //go:embed assets/icons/music-app-systray-icon.ico
 var icon []byte
 
-type cmdArgs struct {
-	config *string
-	tui    *bool
-	cli    *bool
-}
-
 func main() {
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6061", nil))
@@ -40,26 +34,29 @@ func main() {
 		return
 	}
 	config := &model.Config{}
-	err := config.Read(*cmdArgs.config)
+	err := config.Read(*cmdArgs.Config)
 	if err != nil {
 		panic(err)
 	}
 
-	createUI(cmdArgs, &assets, icon, func() {
-		onStartup(config)
+	a := app.NewApp(cmdArgs, config, assets, icon)
+
+	createUI(a, func(app *app.AppState) {
+		onStartup(app)
 	})
 }
 
-func onStartup(config *model.Config) {
+func onStartup(a *app.AppState) {
 	time.Sleep(time.Second)
 
-	mp := audio.CreatePlayer(config.PlayerType)
+	mp := audio.CreatePlayer(a.Config.PlayerType)
 
 	defer mp.Close()
 
-	go runServer(config, mp)
+	go runServer(a.Config, mp)
 
-	go runKeyboardListener(config.Controls, mp)
+	a.SetAudioPlayer(mp)
+	go a.RunKeyboardListener()
 
 	for {
 		time.Sleep(time.Second)
@@ -79,26 +76,30 @@ func runServer(config *model.Config, mp audio.Player) {
 	server.Serve(config, mp)
 }
 
-func createUI(args *cmdArgs, assets *embed.FS, icon []byte, onStartup func()) {
+func createUI(a *app.AppState, onStartup func(a *app.AppState)) {
 	uiType := "gui"
-	if *args.tui {
+	if *a.Args.Tui {
 		uiType = "tui"
-	} else if *args.cli {
+	} else if *a.Args.Cli {
 		uiType = "cli"
 	}
 
-	ui.CreateNew(uiType, assets, icon, onStartup)
+	if *a.Args.Verbose {
+		logger.SetLevel(logger.LevelInfo)
+	} else {
+		logger.SetLevel(logger.LevelWarn)
+	}
+
+	ui.CreateNew(uiType, a, onStartup)
+
 }
 
-func runKeyboardListener(controls map[string]string, mp audio.Player) {
-	devices.WatchInput(controls, mp)
-}
-
-func registerFlags() *cmdArgs {
-	var args cmdArgs
-	args.config = flag.String("config", "config.json", "Config file path")
-	args.tui = flag.Bool("tui", false, "show tui")
-	args.cli = flag.Bool("cli", false, "pure cli")
+func registerFlags() *app.CmdArgs {
+	var args app.CmdArgs
+	args.Config = flag.String("config", "config.json", "Config file path")
+	args.Tui = flag.Bool("tui", false, "show tui")
+	args.Cli = flag.Bool("cli", false, "pure cli")
+	args.Verbose = flag.Bool("vv", false, "verbose mode")
 
 	// Use a flag with usage function as its value
 	helpFlag := flag.Bool("h", false, usage())
@@ -123,6 +124,7 @@ Usage:
   -v          Print version information
   --tui       Render text user interface
   --cli       Render GUI interface
+  -vv         Verbose mode, print more debug info
 
 Flags:
   config	The config file path (defauklt: "config.json")

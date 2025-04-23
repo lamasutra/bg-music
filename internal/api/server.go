@@ -77,7 +77,7 @@ func speak(sentence string, srv *ServerState) error {
 		narSeq[i] = val
 	}
 
-	// ui.Debug("almost")
+	// logger.Debug("almost")
 
 	srv.player.Speak(&narSeq, srv.config)
 
@@ -107,19 +107,19 @@ func changeState(state string, srv *ServerState) error {
 	return nil
 }
 
-func changeMusic(state string, srv *ServerState) error {
+func changeMusic(state string, srv *ServerState, allowSame bool) error {
 	logger.Debug("changing music")
 	music, err := srv.config.GetRandomStateMusic(state)
 	if err != nil {
 		logger.Error(err)
 		return err
 	}
-	st, err := srv.config.GetState(state)
-	if err != nil {
-		logger.Error(err)
-		return err
-	}
-	allowSame := len(st.Music) == 1
+	// st, err := srv.config.GetState(state)
+	// if err != nil {
+	// 	logger.Error(err)
+	// 	return err
+	// }
+	// allowSame := len(st.Music) == 1
 	srv.player.PlayMusic(music, srv.config, allowSame)
 
 	return err

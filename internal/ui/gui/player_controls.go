@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/lamasutra/bg-music/internal/audio"
@@ -43,7 +42,7 @@ func (p *PlayerControls) Mute() {
 }
 
 func (p *PlayerControls) onMusicChange(musicAny any, metadataAny any) {
-	fmt.Println("music change", musicAny, metadataAny, time.Now().UnixMilli()/1000)
+	logger.Info("music change", musicAny, metadataAny, time.Now().UnixMilli()/1000)
 	music, ok := musicAny.(model.Music)
 	if !ok {
 		logger.Debug("music not ok", metadataAny)

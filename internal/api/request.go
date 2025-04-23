@@ -24,3 +24,7 @@ type StateRequest struct {
 type EventRequest struct {
 	Event string `json:"event"`
 }
+
+type NextRequest struct {
+	AllowSame bool `json:"allow_same"`
+}

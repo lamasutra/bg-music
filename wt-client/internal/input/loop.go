@@ -9,14 +9,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/wt-client/internal/model"
 	"github.com/lamasutra/bg-music/wt-client/internal/player"
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 type inputLoop struct {
-	pid                           int
 	host                          string
+	sleepTime                     time.Duration
 	conf                          *model.Config
 	stMachine                     *model.StateMachine
 	bgPlayer                      player.BgPlayer
@@ -38,15 +38,18 @@ type inputLoop struct {
 	hudMsgParser                  *model.DamageParser
 	player                        *model.Player
 	currentTarget                 *model.Player
+	parser                        *DataParser
 }
 
 func CreateInputLoop(conf *model.Config, stMachine *model.StateMachine, bgPlayer player.BgPlayer) *inputLoop {
 	hmp := model.NewDamageParser()
 	return &inputLoop{
+		sleepTime:    time.Millisecond * 500,
 		host:         conf.Host,
 		conf:         conf,
 		stMachine:    stMachine,
 		bgPlayer:     bgPlayer,
+		parser:       createParser(),
 		hudMsgParser: hmp,
 		player:       hmp.FindOrCreatePlayer(conf.Nickname),
 	}
@@ -54,47 +57,47 @@ func CreateInputLoop(conf *model.Config, stMachine *model.StateMachine, bgPlayer
 
 func (l *inputLoop) Run() {
 	input.Clear()
-	ui.Input(input)
+	// ui.Input(input)
 
 	// @todo find recent state
-	ui.Debug("sending default state ", l.currentState, " ... ")
+	logger.Debug("sending default state ", l.currentState, " ... ")
 
 	err := l.bgPlayer.SendState(l.currentState)
 	if err != nil {
-		ui.Error("failed")
+		logger.Error("failed")
 	} else {
-		ui.Debug("ok")
+		logger.Debug("ok")
 	}
 
 	for {
 		ok, err := l.checkGameIsUpAndRunning()
 		if !ok || err != nil {
-			// ui.Debug(err)
+			// logger.Debug(err)
 			if input.GameRunning {
-				ui.Debug("game shut down")
+				logger.Debug("game shut down")
 			}
 			input.GameRunning = false
 			(*inputMapBool)["GameRunning"] = input.GameRunning
 			l.handleNextState()
-			time.Sleep(sleepTime)
+			time.Sleep(l.sleepTime)
 			continue
 		} else {
 			if !input.GameRunning {
-				ui.Debug("game is up and running")
+				logger.Debug("game is up and running")
 			}
 			input.GameRunning = true
 			(*inputMapBool)["GameRunning"] = input.GameRunning
 		}
 
-		loadData(l.host)
+		l.parser.loadData(l.host)
 		if !l.hudMsgChecked {
 			l.checkHudMsg()
 		}
-		parseInput(l.conf, l.hudMsgParser, l.player)
+		l.parser.parseInput(l.conf, l.hudMsgParser, l.player)
 		// ui.Input(input)
 		// events
 		// jstr, _ := json.MarshalIndent(player, "", "  ")
-		// ui.Debug(string(jstr))
+		// logger.Debug(string(jstr))
 		if input.MissionStarted {
 			l.handleMissionEvents()
 		} else {
@@ -201,9 +204,9 @@ func (l *inputLoop) handleMissionEvents() {
 func (l *inputLoop) handleVehicleChange() {
 	l.currentVehicle = input.PlayerVehicle
 	if l.currentVehicle != "" {
-		ui.Debug("vehicle change to", currentVehicle)
-		l.vehicleConf = getCurrentVehicle()
-		ui.Debug("vehicle", l.vehicleConf)
+		logger.Debug("vehicle change to", currentVehicle)
+		l.vehicleConf = l.parser.getCurrentVehicle()
+		logger.Debug("vehicle", l.vehicleConf)
 		l.vehicleTheme = l.conf.GetThemeForVehicle(l.vehicleConf)
 		// fmt.Println("vehicle theme", utils.JsonPretty(vehicleTheme))
 		l.bgPlayer.SendEventStates(&model.BgPlayerConfig{
@@ -219,20 +222,20 @@ func (l *inputLoop) handleVehicleChange() {
 		l.player.SeverlyDamaged = false
 		// fmt.Println("sent")
 	} else {
-		ui.Debug("vehicle change to none")
+		logger.Debug("vehicle change to none")
 		// @todo - send default theme ?
 		l.lastKillTime = 0
 	}
-	ui.Debug("player type:", input.PlayerType)
+	logger.Debug("player type:", input.PlayerType)
 	if input.EnemyAirNear {
-		ui.Debug("air danger")
+		logger.Debug("air danger")
 	} else if input.EnemyAirClose {
-		ui.Debug("air combat")
+		logger.Debug("air combat")
 	}
 	if input.EnemyGroundNear {
-		ui.Debug("ground danger")
+		logger.Debug("ground danger")
 	} else if input.EnemyGroundClose {
-		ui.Debug("ground combat")
+		logger.Debug("ground combat")
 	}
 }
 
@@ -242,17 +245,17 @@ func (l *inputLoop) handleNextState() {
 	for {
 		l.state, err = l.stMachine.GetNextState(inputMapBool)
 		if err != nil {
-			ui.Error("getNextState failed", err)
+			logger.Error("getNextState failed", err)
 			break
 		}
 		// fast forward state
 		if l.state != "" {
 			l.newState = l.state
 			l.stMachine.SetState(l.state)
-			ui.Debug("state", state)
+			logger.Debug("state", l.state)
 		} else {
 			if l.newState != "" {
-				ui.Debug("new state:", l.newState)
+				logger.Debug("new state:", l.newState)
 				l.bgPlayer.SendState(l.newState)
 				l.currentState = l.newState
 			} else {
@@ -262,7 +265,7 @@ func (l *inputLoop) handleNextState() {
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
-	time.Sleep(sleepTime)
+	time.Sleep(l.sleepTime)
 }
 
 func (l *inputLoop) checkGameIsUpAndRunning() (bool, error) {
@@ -292,15 +295,15 @@ func (l *inputLoop) getPid() (int, error) {
 }
 
 func (l *inputLoop) checkHudMsg() {
-	ui.Debug("checkHudMsg")
+	logger.Debug("checkHudMsg")
 	l.hudMsgChecked = true
-	inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
-	lastDmg := inputData.HudMsg.GetLastDmg()
+	l.parser.inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
+	lastDmg := l.parser.inputData.HudMsg.GetLastDmg()
 	if lastDmg == nil {
-		ui.Debug("not necessary")
+		logger.Debug("not necessary")
 		return
 	}
 	state.lastDmg = uint64(lastDmg.ID)
-	ui.Debug("set last id", lastDmg.ID)
-	inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
+	logger.Debug("set last id", lastDmg.ID)
+	l.parser.inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
 }

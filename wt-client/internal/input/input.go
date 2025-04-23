@@ -1,35 +1,26 @@
 package input
 
 import (
-	"time"
-
-	"github.com/lamasutra/bg-music/wt-client/internal/client"
 	"github.com/lamasutra/bg-music/wt-client/internal/model"
-	"github.com/lamasutra/bg-music/wt-client/internal/types"
 )
 
-const sleepTime = time.Millisecond * 500
-const sleepOffline = time.Millisecond * 1000
+type GameMode interface {
+	GetName() string
+	ParseInput()
+}
+
+type DataParser struct {
+	modes       map[string]GameMode
+	inputData   *model.WtData
+	currentMode GameMode
+}
 
 var currentVehicle *model.Vehicle
 var currentTheme *model.Theme
 
-var inputData = &types.WtData{
-	State:      &client.State{},
-	MapInfo:    &client.MapInfo{},
-	MapObj:     &client.MapObj{},
-	Indicators: &client.Indicators{},
-	HudMsg:     &client.HudMsg{},
-}
-
-var state struct {
-	lastEvt uint64
-	lastDmg uint64
-}
-
-var _inputMapBool_ types.WtInputMapBool = make(types.WtInputMapBool, 9)
-var inputMapBool *types.WtInputMapBool = &_inputMapBool_
-var input = &types.WtInput{
+var _inputMapBool_ model.WtInputMapBool = make(model.WtInputMapBool, 9)
+var inputMapBool *model.WtInputMapBool = &_inputMapBool_
+var input = &model.WtInput{
 	NearestEnemyAir:    -1,
 	NearestEnemyGround: -1,
 }

@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lamasutra/bg-music/internal/app"
 	"github.com/lamasutra/bg-music/pkg/logger"
 	"golang.org/x/term"
 )
@@ -40,6 +41,7 @@ type tuiLogsView struct {
 }
 
 type tuiModel struct {
+	app      *app.AppState
 	log      []string
 	logFile  *os.File
 	music    tuiMusicProgressbar
@@ -47,8 +49,9 @@ type tuiModel struct {
 	logsView tuiLogsView
 }
 
-func NewTui() *tuiModel {
+func NewTui(a *app.AppState) *tuiModel {
 	tm := &tuiModel{
+		app: a,
 		music: tuiMusicProgressbar{
 			model: progress.New(),
 		},
@@ -74,8 +77,8 @@ func NewTui() *tuiModel {
 	return tm
 }
 
-func (m *tuiModel) Run(onStartup func()) {
-	onStartup()
+func (m *tuiModel) Run(onStartup func(a *app.AppState)) {
+	onStartup(m.app)
 }
 
 func (m *tuiModel) Init() tea.Cmd {

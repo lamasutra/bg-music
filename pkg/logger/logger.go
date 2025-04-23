@@ -15,13 +15,15 @@ const (
 	LevelTrace
 )
 
+const EV_LOG = "log"
+
 type logBuffer struct {
 	level    uint8
 	messages []message
 }
 
 var defaultLogger *logBuffer = &logBuffer{
-	level:    LevelTrace,
+	level:    LevelFatal,
 	messages: make([]message, 0),
 }
 
@@ -32,11 +34,15 @@ func New(level uint8) *logBuffer {
 }
 
 func SetLevel(level uint8) {
+	// fmt.Println("setting level", level)
 	defaultLogger.level = level
 }
 
 func (lb *logBuffer) Log(level uint8, args ...any) {
-	if level < lb.level {
+	// fmt.Println("logging", level, lb.level)
+	// if we are not logging at this level, don't bother
+	if level > lb.level {
+		// fmt.Println("level too low to log", level)
 		return
 	}
 	msg := message{
@@ -45,7 +51,7 @@ func (lb *logBuffer) Log(level uint8, args ...any) {
 		msg:   args,
 	}
 	lb.messages = append(lb.messages, msg)
-	events.Trigger("log", msg)
+	events.Trigger(EV_LOG, msg)
 }
 
 func (lb *logBuffer) Fatal(args ...any) {

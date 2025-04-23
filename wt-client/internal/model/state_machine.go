@@ -2,8 +2,6 @@ package model
 
 import (
 	"errors"
-
-	"github.com/lamasutra/bg-music/wt-client/internal/types"
 )
 
 type StateMachine struct {
@@ -22,7 +20,7 @@ func (sm *StateMachine) GetCurrentState() string {
 	return sm.state
 }
 
-func (sm *StateMachine) GetNextState(input *types.WtInputMapBool) (string, error) {
+func (sm *StateMachine) GetNextState(input *WtInputMapBool) (string, error) {
 	possibleStateCodes, err := sm.getPossibleStateCodes()
 	// fmt.Println("possible states", possibleStateCodes)
 	if err != nil {
@@ -66,7 +64,7 @@ func (sm *StateMachine) getStateRule(state string) (*StateRule, error) {
 	return &rule, nil
 }
 
-func checkConditions(input *types.WtInputMapBool, rule *StateRule) bool {
+func checkConditions(input *WtInputMapBool, rule *StateRule) bool {
 	matches := true
 	for key, val := range rule.ConditionsBool {
 		// fmt.Println("  checking", key, "for", val)

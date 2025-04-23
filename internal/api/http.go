@@ -52,7 +52,7 @@ func (h *HttpServer) Serve(conf *model.Config, player audio.Player) {
 	for {
 		select {
 		case <-serverState.player.GetMusicEndedChan():
-			changeMusic(h.state.state, h.state)
+			changeMusic(h.state.state, h.state, true)
 		default:
 			time.Sleep(sleepTime)
 		}
@@ -94,7 +94,12 @@ func controlHandler(c *gin.Context) {
 		return
 	case "next":
 		logger.Debug("control@next")
-		changeMusic(instance.state.state, instance.state)
+		data := NextRequest{}
+		if err := c.ShouldBindJSON(&data); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		changeMusic(instance.state.state, instance.state, data.AllowSame)
 		c.Status(http.StatusNoContent)
 		return
 	}

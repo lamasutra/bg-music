@@ -3,15 +3,11 @@ package model
 import (
 	"encoding/json"
 	"testing"
-
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 func TestMerge(t *testing.T) {
 	var config Config
 	config.Read("../wt-config.json")
-
-	ui.CreateUI("cli")
 
 	defaultTheme := *config.getTheme("default")
 	adlib := *config.getTheme("tfx-adlib")
@@ -40,8 +36,6 @@ func TestGetVehicleTheme(t *testing.T) {
 	var config Config
 	config.Read("../wt-config.json")
 
-	ui.CreateUI("cli")
-
 	config.GetThemeForVehicle(&Vehicle{
 		Title: "air",
 		Theme: "default",
@@ -64,8 +58,6 @@ func TestGetVehicleTheme(t *testing.T) {
 func TestReferences(t *testing.T) {
 	var config Config
 	config.Read("../wt-config.json")
-
-	ui.CreateUI("cli")
 
 	vehicle1 := Vehicle{
 		Title: "ef_2000_block_10",

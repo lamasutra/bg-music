@@ -4,11 +4,9 @@ import (
 	"testing"
 
 	"github.com/lamasutra/bg-music/wt-client/internal/client"
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 func TestDamageParser(t *testing.T) {
-	ui.CreateUI("cli")
 	d := DamageParser{}
 	d.init()
 	dmg := client.Damage{Msg: "-Tygri- xbladecz (F/A-18A) has crashed."}

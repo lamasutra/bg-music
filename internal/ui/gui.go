@@ -5,12 +5,13 @@ import (
 	"embed"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/lamasutra/bg-music/internal/app"
 	"github.com/lamasutra/bg-music/internal/ui/gui"
 	"github.com/lamasutra/bg-music/pkg/events"
+	"github.com/lamasutra/bg-music/pkg/input"
 
 	bgplogger "github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/application"
@@ -24,21 +25,28 @@ import (
 )
 
 type guiState struct {
+	app            *app.AppState
 	ctx            context.Context // app
-	onStartup      func()
+	onStartup      func(a *app.AppState)
 	assets         *embed.FS
 	icon           []byte
 	visible        bool
 	playerControls *gui.PlayerControls
+	inputManager   input.InputManager
 	mShow          *systray.MenuItem
+}
+
+type WindowSize struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
 }
 
 func (s *guiState) startup(ctx context.Context) {
 	s.ctx = ctx
 	runtime.Hide(s.ctx)
 	events.ListenAll("gui", s.eventDispatcher)
-	events.Listen("log", "cli", s.renderMessage)
-	s.onStartup()
+	events.Listen(bgplogger.EV_LOG, "gui", s.renderMessage)
+	s.onStartup(s.app)
 }
 
 func (s *guiState) renderMessage(args ...any) {
@@ -55,6 +63,10 @@ func (s *guiState) renderMessage(args ...any) {
 }
 
 func (s *guiState) eventDispatcher(event string, values ...any) {
+	if event == input.EV_INPUT_PRESSED {
+		bgplogger.Info("eventDispatcher", event, values)
+	}
+
 	runtime.EventsEmit(s.ctx, event, values...)
 }
 
@@ -75,29 +87,23 @@ func (s *guiState) shutdown(ctx context.Context) {
 	// Perform your teardown here
 }
 
-func NewGui(assets *embed.FS, icon []byte) *guiState {
+func NewGui(a *app.AppState) *guiState {
 	// Create an instance of the app structure
 	app := &guiState{
-		assets: assets,
-		icon:   icon,
+		app:    a,
+		assets: a.Assets,
+		icon:   a.Icon,
 	}
 
 	return app
 }
 
-func (s *guiState) Run(onStartup func()) {
+func (s *guiState) Run(onStartup func(a *app.AppState)) {
 	s.onStartup = onStartup
 
-	// theme := runtime.Theme(s.ctx)
-	// if theme == runtime.ThemeDark {
-	// 	println("Dark mode is active")
-	// } else {
-	// 	println("Light mode is active")
-	// }
+	guiApp := s.createApplication()
 
-	app := s.createApplication()
-
-	err := app.Run()
+	err := guiApp.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,12 +113,23 @@ func (s *guiState) MinimizeWindow() {
 	runtime.WindowMinimise(s.ctx)
 }
 
+func (s *guiState) SetWindowSize(width int, height int) {
+	runtime.WindowSetSize(s.ctx, width, height)
+}
+
+func (s *guiState) GetWindowSize() WindowSize {
+	width, height := runtime.WindowGetSize(s.ctx)
+
+	return WindowSize{Width: width, Height: height}
+}
+
 func (s *guiState) CloseApp() {
 	runtime.Quit(s.ctx)
 }
 
 func (s *guiState) createApplication() *application.Application {
 	s.playerControls = gui.NewPlayerControls()
+	s.inputManager = input.NewManager(200 * time.Millisecond)
 
 	// Create application with options
 	app := application.NewWithOptions(
@@ -123,7 +140,7 @@ func (s *guiState) createApplication() *application.Application {
 			MinWidth:          500,
 			MinHeight:         304,
 			MaxWidth:          500,
-			MaxHeight:         304,
+			MaxHeight:         768,
 			DisableResize:     false,
 			Fullscreen:        false,
 			Frameless:         true,
@@ -144,6 +161,9 @@ func (s *guiState) createApplication() *application.Application {
 			Bind: []interface{}{
 				s,
 				s.playerControls,
+				s.inputManager,
+				s.app,
+				s.app.Config,
 			},
 			Linux: &linux.Options{
 				Icon:        s.icon,
@@ -180,46 +200,8 @@ func (s *guiState) createApplication() *application.Application {
 		})
 
 	s.createSystray()
-	// wails3 systray
-	// Tray: &tray.Options{
-	// 	Icon:    "frontend/public/icon.png", // or use icon bytes
-	// 	Menu:    trayMenu,
-	// 	Tooltip: "Wails Tray App",
-	// },
-	// systray := app.NewSystemTray()
-	// systray.SetLabel("My App")
-	// systray.SetIcon(iconBytes)
-	// systray.Run()
-
-	// trayMenu := menu.NewMenu()
-	// trayMenu.Append(menu.Text("Show App", nil, func(_ *menu.CallbackData) {
-	// 	// You can add logic to show the main window here
-	// }))
-	// trayMenu.Append(menu.Text("Quit", nil, func(_ *menu.CallbackData) {
-	// 	wails.Quit()
-	// }))
 
 	return app
-}
-
-func (s *guiState) Debug(args ...any) {
-	length := len(args) + 1
-	buf := make([]string, length)
-	buf[0] = time.Now().Format("15:04:05.000")
-	for i, val := range args {
-		buf[i+1] = fmt.Sprint(val)
-	}
-	fmt.Println(strings.Join(buf, " "))
-}
-
-func (s *guiState) Write(p []byte) (n int, err error) {
-	return fmt.Println(string(p))
-}
-
-func (s *guiState) Error(args ...any) {
-	newArgs := []any{"ERR:"}
-	newArgs = append(newArgs, args...)
-	s.Debug(newArgs...)
 }
 
 func (s *guiState) createSystray() {
@@ -263,7 +245,10 @@ func (s *guiState) handleSystray() {
 			// runtime.Focus(s.ctx)
 			s.ToggleVisibility()
 		case <-mOptions.ClickedCh:
+			// runtime.EventsEmit(s.ctx, "navigate", "/options")
 			runtime.Show(s.ctx)
+			runtime.EventsEmit(s.ctx, "show-options", true)
+			// runtime.Show(s.ctx)
 		case <-mQuit.ClickedCh:
 			systray.Quit()
 		}

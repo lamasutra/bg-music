@@ -3,54 +3,54 @@ package input
 import (
 	"time"
 
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/wt-client/internal/client"
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 // @todo paralel load
-func loadData(host string) {
+func (p *DataParser) loadData(host string) {
 	// fmt.Println("Loading data from", host)
-	err := inputData.State.Load(host)
+	err := p.inputData.State.Load(host)
 	if err != nil {
 		// fmt.Println("state error: ", err)
 		time.Sleep(sleepOffline)
-		err = inputData.State.Load(host)
+		err = p.inputData.State.Load(host)
 		if err != nil {
 			return
 		}
 	}
 
-	err = inputData.Indicators.Load(host)
+	err = p.inputData.Indicators.Load(host)
 	if err != nil {
-		ui.Error("indicators error: ", err)
+		logger.Error("indicators error: ", err)
 	}
-	err = inputData.MapInfo.Load(host)
+	err = p.inputData.MapInfo.Load(host)
 	if err != nil {
-		ui.Error("!!! mapInfo error: ", err)
+		logger.Error("!!! mapInfo error: ", err)
 	}
 	// load other data
-	if inputData.MapInfo.Valid {
+	if p.inputData.MapInfo.Valid {
 		// load map identity
-		if inputData.Identity == 0 {
-			inputData.Identity, err = client.MapIdentity(host)
-			ui.Error("map identity error: ", err)
+		if p.inputData.Identity == 0 {
+			p.inputData.Identity, err = client.MapIdentity(host)
+			logger.Error("map identity error: ", err)
 		}
 
-		err = inputData.MapObj.Load(host)
+		err = p.inputData.MapObj.Load(host)
 		if err != nil {
-			ui.Error("mapObj error: ", err)
+			logger.Error("mapObj error: ", err)
 			// } else {
 			// fmt.Println(mapObj)
 		}
-		err = inputData.HudMsg.Load(host, state.lastEvt, state.lastDmg)
+		err = p.inputData.HudMsg.Load(host, state.lastEvt, state.lastDmg)
 		if err != nil {
-			ui.Error("hudMsg error: ", err)
+			logger.Error("hudMsg error: ", err)
 		} else {
 
 		}
 	} else {
-		if inputData.Identity != 0 {
-			inputData.Identity = 0
+		if p.inputData.Identity != 0 {
+			p.inputData.Identity = 0
 		}
 	}
 }

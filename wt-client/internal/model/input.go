@@ -1,6 +1,11 @@
-package types
+package model
 
-import "github.com/lamasutra/bg-music/wt-client/internal/client"
+import (
+	"time"
+
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/wt-client/internal/client"
+)
 
 // we have this here to prevent circular dependencies
 // I have to admit I am bit lame at this ;)
@@ -41,12 +46,85 @@ type WtInput struct {
 type WtInputMapBool map[string]bool
 
 type WtData struct {
-	Identity   uint32
-	HudMsg     *client.HudMsg
-	Indicators *client.Indicators
-	MapInfo    *client.MapInfo
-	MapObj     *client.MapObj
-	State      *client.State
+	Identity     uint32
+	HudMsg       *client.HudMsg
+	Indicators   *client.Indicators
+	MapInfo      *client.MapInfo
+	MapObj       *client.MapObj
+	State        *client.State
+	sleepTime    time.Duration
+	sleepOffline time.Duration
+	state        struct {
+		lastEvt uint64
+		lastDmg uint64
+	}
+}
+
+func NewInputData() *WtData {
+	return &WtData{
+		sleepTime:    time.Millisecond * 500,
+		sleepOffline: time.Millisecond * 1000,
+		State:        &client.State{},
+		MapInfo:      &client.MapInfo{},
+		MapObj:       &client.MapObj{},
+		Indicators:   &client.Indicators{},
+		HudMsg:       &client.HudMsg{},
+	}
+}
+
+func (w *WtData) Load(host string) {
+	// fmt.Println("Loading data from", host)
+	err := w.State.Load(host)
+	if err != nil {
+		// fmt.Println("state error: ", err)
+		time.Sleep(w.sleepOffline)
+		err = w.State.Load(host)
+		if err != nil {
+			return
+		}
+	}
+
+	err = w.Indicators.Load(host)
+	if err != nil {
+		logger.Error("indicators error: ", err)
+	}
+	err = w.MapInfo.Load(host)
+	if err != nil {
+		logger.Error("!!! mapInfo error: ", err)
+	}
+	// load other data
+	if w.MapInfo.Valid {
+		// load map identity
+		if w.Identity == 0 {
+			w.Identity, err = client.MapIdentity(host)
+			logger.Error("map identity error: ", err)
+		}
+
+		err = w.MapObj.Load(host)
+		if err != nil {
+			logger.Error("mapObj error: ", err)
+			// } else {
+			// fmt.Println(mapObj)
+		}
+		err = w.HudMsg.Load(host, w.state.lastEvt, w.state.lastDmg)
+		if err != nil {
+			logger.Error("hudMsg error: ", err)
+		} else {
+
+		}
+	} else {
+		if w.Identity != 0 {
+			w.Identity = 0
+		}
+	}
+}
+
+func (w *WtData) SetLastDmg(lastDmg uint64) {
+	w.state.lastDmg = lastDmg
+}
+
+func (w *WtData) SetLastEvt(lastEvt uint64) {
+	w.state.lastEvt = lastEvt
 }
 
 // GameRunning        =     false

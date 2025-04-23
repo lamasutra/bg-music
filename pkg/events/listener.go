@@ -17,10 +17,18 @@ func (eb *eventBus) ListenAll(name string, callback globalEventListener) {
 	eb.listeners[name] = callback
 }
 
+func (eb *eventBus) Stop(name string, key string) {
+	delete(eb.events[name].listeners, key)
+}
+
 func Listen(name string, key string, callback func(...any)) error {
 	return defaultBus.Listen(name, key, callback)
 }
 
 func ListenAll(name string, callback globalEventListener) {
 	defaultBus.ListenAll(name, callback)
+}
+
+func Stop(name string, key string) {
+	defaultBus.Stop(name, key)
 }

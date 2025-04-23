@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/wt-client/internal/utils"
 )
 
 var mergedThemesCache map[string]*Theme = make(map[string]*Theme)
@@ -74,35 +75,37 @@ func (config *Config) Read(path string) error {
 func (c *Config) getVehicleConfig(vehicle string) *Vehicle {
 	conf, ok := c.Vehicles[vehicle]
 	if ok {
-		ui.Debug("config for vehicle `", vehicle, "` found")
+		logger.Debug("config for vehicle `", vehicle, "` found")
 		return &conf
 	}
-	ui.Debug("vehicle config for `", vehicle, "` not found")
+	logger.Debug("vehicle config for `", vehicle, "` not found")
 	return &Vehicle{}
 }
 
 func (c *Config) getTheme(theme string) *Theme {
-	ui.Debug("getting theme", theme)
+	logger.Debug("getting theme", theme)
 	found, exists := c.Themes[theme]
 	if !exists {
-		ui.Error("vehicle theme", theme, "does not exists")
+		logger.Error("vehicle theme", theme, "does not exists")
 		return &Theme{}
 	}
 	// fmt.Println("reference", fmt.Sprintf("%p", &found))
 	if found.Extend != "" {
 		extend, exists := c.Themes[found.Extend]
-		ui.Debug("extending", found.Extend)
+		logger.Debug("extending", found.Extend)
 		// fmt.Println("reference extend", fmt.Sprintf("%p", &extend))
 		if exists {
 			found = *extend.merge(found)
-			ui.Debug("extended")
+			logger.Debug("extended")
 			// fmt.Println("reference merge", fmt.Sprintf("%p", &found))
 		} else {
-			ui.Error("does not exists", found.Extend)
+			logger.Error("does not exists", found.Extend)
 		}
 	} else {
-		ui.Debug("theme is not extended")
+		logger.Debug("theme is not extended")
 	}
+
+	logger.Trace("config", utils.JsonPretty(found))
 
 	return &found
 }
@@ -124,7 +127,7 @@ func (c *Config) GetVehicleForPlayerTypeAndVehicleType(playerType string, vehicl
 }
 
 func (c *Config) GetThemeForVehicle(vehicle *Vehicle) *Theme {
-	ui.Debug("GetThemeForVehicle", vehicle)
+	logger.Debug("GetThemeForVehicle", vehicle)
 	cacheKey := vehicle.Title
 	if cacheKey == "" {
 		cacheKey = vehicle.Type

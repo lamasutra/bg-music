@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/wt-client/internal/client"
-	"github.com/lamasutra/bg-music/wt-client/internal/ui"
 )
 
 type DamageParser struct {
@@ -36,30 +36,30 @@ func (d *DamageParser) GetLastKillTime() int64 {
 }
 
 func (d *DamageParser) parseDamage(dmg client.Damage, index int) bool {
-	// ui.Debug("parse damage", dmg.Msg)
+	// logger.Debug("parse damage", dmg.Msg)
 	matches := d.regexp.FindStringSubmatch(dmg.Msg)
 	if len(matches) == 0 {
-		ui.Debug("no match")
+		logger.Debug("no match")
 		return false
 	}
 
 	// i := 0
 	// for i < len(matches) {
-	// 	ui.Debug("match", i, matches[i])
+	// 	logger.Debug("match", i, matches[i])
 	// 	i++
 	// }
-	// ui.Debug(matches)
+	// logger.Debug(matches)
 	var aiSource, aiTarget bool
 	aiSource = matches[1] == "[ai]"
 	aiTarget = matches[5] == "[ai]" || (matches[5] == "" && matches[7] == "")
 	if aiSource {
-		ui.Debug("ai source")
+		logger.Debug("ai source")
 		d.parseAiSource(&matches)
 	} else if aiTarget {
-		ui.Debug("ai target")
+		logger.Debug("ai target")
 		d.parseAiTarget(&matches)
 	} else {
-		ui.Debug("players")
+		logger.Debug("players")
 		d.parsePlayers(&matches)
 	}
 
@@ -89,12 +89,12 @@ func (d *DamageParser) parseAiTarget(matches *[]string) (*Player, *Player) {
 	sourcePlayer.Vehicle = strings.TrimRight(strings.TrimLeft(sourceVehicle, "("), ")")
 	targetPlayer.Vehicle = strings.TrimRight(strings.TrimLeft(targetVehicle, "("), ")")
 
-	// ui.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
+	// logger.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
 	handled := d.handleAction(action, sourcePlayer, targetPlayer)
 	if handled {
-		ui.Debug("action", action, "handled")
+		logger.Debug("action", action, "handled")
 	} else {
-		ui.Debug("action", action, "not handled")
+		logger.Debug("action", action, "not handled")
 	}
 
 	return sourcePlayer, targetPlayer
@@ -116,12 +116,12 @@ func (d *DamageParser) parsePlayers(matches *[]string) (*Player, *Player) {
 	sourcePlayer.Vehicle = strings.TrimRight(strings.TrimLeft(sourceVehicle, "("), ")")
 	targetPlayer.Vehicle = strings.TrimRight(strings.TrimLeft(targetVehicle, "("), ")")
 
-	// ui.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
+	// logger.Debug("source:", sourceName, "sourceVehicle:", sourceVehicle, "action:", action, "target:", targetName, "targetVehicle:", targetVehicle)
 	handled := d.handleAction(action, sourcePlayer, targetPlayer)
 	if handled {
-		ui.Debug("action", action, "handled")
+		logger.Debug("action", action, "handled")
 	} else {
-		ui.Debug("action", action, "not handled")
+		logger.Debug("action", action, "not handled")
 	}
 
 	return sourcePlayer, targetPlayer
@@ -130,10 +130,10 @@ func (d *DamageParser) parsePlayers(matches *[]string) (*Player, *Player) {
 func (d *DamageParser) FindOrCreatePlayer(name string) *Player {
 	pl, ok := d.player[name]
 	if ok {
-		ui.Debug("player found", name)
+		logger.Debug("player found", name)
 		return pl
 	}
-	ui.Debug("creating player", name)
+	logger.Debug("creating player", name)
 	pl = &Player{
 		Name:    name,
 		Targets: make(map[string]*Player, 64),
@@ -156,7 +156,7 @@ func (d *DamageParser) handleAction(action string, source *Player, target *Playe
 		// reset damage, we are dead anyway
 		source.Damaged = false
 		source.SeverlyDamaged = false
-		// ui.Debug("has crashed", source, target)
+		// logger.Debug("has crashed", source, target)
 		return true
 	case "shot down", "destroyed":
 		source.LastKillTime = now
@@ -166,7 +166,7 @@ func (d *DamageParser) handleAction(action string, source *Player, target *Playe
 		target.Damaged = false
 		target.SeverlyDamaged = false
 		source.addTarget(target)
-		// ui.Debug("shot down or destroyed", source, target)
+		// logger.Debug("shot down or destroyed", source, target)
 		d.lastAnyKillTime = now
 		return true
 	case "set afire":
@@ -174,21 +174,21 @@ func (d *DamageParser) handleAction(action string, source *Player, target *Playe
 		target.LastBurnedTime = now
 		target.Damaged = true
 		source.addTarget(target)
-		// ui.Debug("set afire", source, target)
+		// logger.Debug("set afire", source, target)
 		return true
 	case "critically damaged":
 		source.LastDamageTime = now
 		target.LastDamagedTime = now
 		target.Damaged = true
 		source.addTarget(target)
-		// ui.Debug("critically damaged", source, target)
+		// logger.Debug("critically damaged", source, target)
 		return true
 	case "severely damaged":
 		source.LastSeverDamageTime = now
 		target.LastSeverelyDamagedTime = now
 		target.Damaged = true
 		source.addTarget(target)
-		// ui.Debug("severely damaged", source, target)
+		// logger.Debug("severely damaged", source, target)
 		return true
 	}
 

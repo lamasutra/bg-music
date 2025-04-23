@@ -1,23 +1,21 @@
 package ui
 
-import (
-	"embed"
-)
+import "github.com/lamasutra/bg-music/internal/app"
 
 type UI interface {
-	Run(func())
+	Run(func(a *app.AppState))
 }
 
 var ui UI
 
-func CreateNew(uiType string, assets *embed.FS, icon []byte, onStartup func()) {
+func CreateNew(uiType string, a *app.AppState, onStartup func(a *app.AppState)) {
 	switch uiType {
 	case "tui":
-		ui = NewTui()
+		ui = NewTui(a)
 	case "cli":
-		ui = NewCli()
+		ui = NewCli(a)
 	default:
-		ui = NewGui(assets, icon)
+		ui = NewGui(a)
 	}
 
 	ui.Run(onStartup)

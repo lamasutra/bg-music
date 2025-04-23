@@ -1,43 +1,48 @@
 {
-    "player_type": "beep",
-    "server_type": "http",
-    "volume": 0,
-    "path": "music",
-    "states": {
-        "idle": {
-            "volume": 50,
-            "music": [
-                {
-                    "path": "crusader/1/08 Track 8.mp3",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "crusader/2/04 Track 4.mp3",
-                    "skip": 0,
-                    "endBefore": 0
-                },
-                {
-                    "path": "crusader/1/04 Track4.mp3",
-                    "skip": 0,
-                    "endBefore": 0
-                }
-            ]
-        }
+  "player_type": "beep",
+  "server_type": "http",
+  "controls": {
+    "device": {
+      "name": "ITE Tech. Inc. ITE Device(8910) Keyboard",
+      "path": "/dev/input/event10"
     },
-    "events": {
-        "test": {
-            "sfx": [{
-                "path": "demo-sfx.mp3"
-            }]
-        }
-    },
-    "controls": {
-        "ctrl+f9": "pause",
-        "ctrl+f10": "next",
-        "ctrl+f8": "prev",
-        "ctrl+f11": "mute",
-        "ctrl++": "volume-up",
-        "ctrl+-": "volume-down"
+    "mapping": {
+      "CTRL+F1": "mute",
+      "CTRL+F2": "volume-down",
+      "CTRL+F3": "volume-up",
+      "CTRL+HOME": "pause",
+      "CTRL+PAGEDOWN": "next",
+      "CTRL+PAGEUP": "prev"
     }
+  },
+  "volume": 50,
+  "path": "music",
+  "events": null,
+  "states": {
+    "idle": {
+      "volume": 50,
+      "music": [
+        {
+          "volume": 0,
+          "path": "crusader/1/08 Track 8.mp3",
+          "skip": 0,
+          "endBefore": 0
+        },
+        {
+          "volume": 0,
+          "path": "crusader/2/04 Track 4.mp3",
+          "skip": 0,
+          "endBefore": 0
+        },
+        {
+          "volume": 0,
+          "path": "crusader/1/04 Track4.mp3",
+          "skip": 0,
+          "endBefore": 0
+        }
+      ],
+      "states": null
+    }
+  },
+  "narrate": null
 }

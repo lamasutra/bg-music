@@ -675,6 +675,128 @@
                 }
             }
         },
+        "top-gun": {
+            "extend": "default",
+            "title": "Top Gun",
+            "states": {
+                "load": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun/10 Top Gun Anthem.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "begin": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun/10 Top Gun Anthem.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "clear": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun/03 Playing With the Boys.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "danger_air": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun-instrumental/danger-zone.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "battle_air": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun-instrumental/mighty-wings.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "danger_ground": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun-instrumental/danger-zone.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "battle_ground": {
+                    "volume": 70,
+                    "music": [
+                        {
+                            "path": "top-gun-instrumental/mighty-wings.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "damaged": {
+                    "volume": 70,
+                    "music": [{
+                        "path": "top-gun/08 Through the Fire.mp3",
+                        "skip": 0,
+                        "endBefore": 0
+                    }]
+                },
+                "severely_damaged": {
+                    "volume": 70,
+                    "music": [{
+                        "path": "top-gun/09 Destination Unknown.mp3",
+                        "skip": 0,
+                        "endBefore": 0
+                    }]
+                },
+                "death": {
+                    "volume": 80,
+                    "music": [
+                        {
+                            "path": "top-gun/12 Memories.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "success": {
+                    "volume": 80,
+                    "music": [
+                        {
+                            "path": "top-gun/04 Lead Me On.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                },
+                "failure": {
+                    "volume": 80,
+                    "music": [
+                        {
+                            "path": "top-gun/07 Heaven in Your Eyes.mp3",
+                            "skip": 0,
+                            "endBefore": 0
+                        }
+                    ]
+                }
+            }
+        },
         "tank": {
             "extend": "default",
             "title": "tanks",
@@ -921,13 +1043,25 @@
             "theme": "tfx-adlib"
         },
         "f_20a": {
-            "theme": "tfx-adlib"
+            "theme": "default"
         },
         "fa_18c_late": {
             "theme": "tfx-adlib"
         },
         "fa_18a": {
             "theme": "tfx-adlib"
+        },
+        "f_14a_early": {
+            "theme": "top-gun"
+        },
+        "f_14a_iriaf": {
+            "theme": "top-gun"
+        },
+        "f_14b": {
+            "theme": "top-gun"
+        },
+        "f-5c": {
+            "theme": "default"
         }
     }
 }

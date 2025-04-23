@@ -234,11 +234,14 @@
             "MissionEnded": false,
             "PlayerLanded": false,
             "PlayerDead": false,
+            "PlayerDamaged": false,
+            "PlayerSeverelyDamaged": false,
             "EnemyAirNear": false,
             "EnemyAirClose": false,
             "EnemyGroundNear": false,
             "EnemyGroundClose": false,
             "AirBattle": false
+
         }
     },
     "death": {

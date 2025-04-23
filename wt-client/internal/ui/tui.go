@@ -6,7 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lamasutra/bg-music/wt-client/internal/types"
+	"github.com/lamasutra/bg-music/pkg/logger"
+	"github.com/lamasutra/bg-music/wt-client/internal/model"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -32,7 +33,7 @@ type tuiLogsView struct {
 type tuiInputView struct {
 	vp       viewport.Model
 	renderer *glamour.TermRenderer
-	data     types.WtInput
+	data     model.WtInput
 }
 
 type tuiModel struct {
@@ -63,9 +64,9 @@ func NewTui() *tuiModel {
 
 func (m *tuiModel) Init() tea.Cmd {
 	if term.IsTerminal(0) {
-		Debug("in a term")
+		logger.Debug("in a term")
 	} else {
-		Debug("not in a term")
+		logger.Debug("not in a term")
 	}
 	width, height, err := term.GetSize(0)
 	if err != nil {
@@ -76,7 +77,7 @@ func (m *tuiModel) Init() tea.Cmd {
 		height -= 10
 	}
 
-	Debug("term size: ", width, height)
+	logger.Debug("term size: ", width, height)
 
 	vp, _ := newViewport(width, 6)
 	renderer, _ := newRenderer(&vp, width)
@@ -211,11 +212,11 @@ func (m *tuiModel) Error(args ...any) {
 	m.Debug(newArgs...)
 }
 
-func (m *tuiModel) Input(in *types.WtInput) {
+func (m *tuiModel) Input(in *model.WtInput) {
 	m.inputView.data = *in
 }
 
-func renderInputData(in *types.WtInput) string {
+func renderInputData(in *model.WtInput) string {
 	return fmt.Sprintf(
 		"  Game running: %s Map loaded: %s Mode: %s Mission started: %s Mission ended: %s\r\n"+
 			"  Player: type %s vehicle: %s landed: %s dead: %s\r\n"+

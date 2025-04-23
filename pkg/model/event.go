@@ -17,7 +17,7 @@ func (e *Event) GetRandomSfx() (*Sfx, error) {
 	length := len(e.Sfx)
 	if length > 1 {
 		index = uint8(rand.Intn(length))
-		// ui.Debug("random sfx index:", index)
+		// logger.Debug("random sfx index:", index)
 	} else {
 		index = 0
 	}
@@ -29,7 +29,7 @@ func (e *Event) GetRandomSentence() (string, error) {
 	length := len(e.Sentence)
 	if length > 1 {
 		index = uint8(rand.Intn(length))
-		// ui.Debug("random sentence index:", index)
+		// logger.Debug("random sentence index:", index)
 	} else {
 		index = 0
 	}

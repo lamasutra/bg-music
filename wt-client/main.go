@@ -8,6 +8,8 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/lamasutra/bg-music/pkg/events"
+	"github.com/lamasutra/bg-music/pkg/logger"
 	"github.com/lamasutra/bg-music/wt-client/internal/input"
 	"github.com/lamasutra/bg-music/wt-client/internal/model"
 	"github.com/lamasutra/bg-music/wt-client/internal/player"
@@ -19,6 +21,9 @@ type cmdArgs struct {
 }
 
 func main() {
+	logger.SetLevel(logger.LevelTrace)
+	events.Listen("log", "cli", renderMessage)
+
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6062", nil))
 	}()
@@ -33,26 +38,39 @@ func main() {
 	var conf model.Config
 	err := conf.Read("wt-config.json")
 	if err != nil {
-		ui.Error("Cannot read wt-config.json")
+		logger.Error("Cannot read wt-config.json")
 		return
 	}
 	err = conf.StateRules.Read("rules.json")
 	if err != nil {
-		ui.Error("Cannot read rules.json")
+		logger.Error("Cannot read rules.json")
 		return
 	}
 
-	ui.Debug("your configured nickname", "`"+conf.Nickname+"`")
+	logger.Debug("your configured nickname", "`"+conf.Nickname+"`")
 
 	bgPayer := player.CreatePlayer(conf.BgPlayerType, &conf)
 	stMachine := model.NewStateMachine("idle", &conf.StateRules)
 	inputLoop := input.CreateInputLoop(&conf, stMachine, bgPayer)
 
 	// debug
-	ui.Debug(stMachine)
+	logger.Debug(stMachine)
 
 	defer bgPayer.Close()
 	inputLoop.Run()
+}
+
+func renderMessage(args ...any) {
+	if len(args) != 1 {
+		panic("invalid arguments count, cannot render message")
+	}
+
+	msg, ok := args[0].(logger.MessageRenderer)
+	if !ok {
+		panic("message is not renderer")
+	}
+
+	fmt.Println(msg.Render())
 }
 
 func initUI(args *cmdArgs) {

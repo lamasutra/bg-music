@@ -329,6 +329,9 @@ func (p *Beep) PlayMusic(music *model.Music, conf *model.Config, allowSame bool)
 	p.currentConfig = conf
 	if p.currentMusic != nil && music.Path == p.currentMusic.Path && !allowSame {
 		logger.Debug("PlayMusic, same song, continue")
+		if music.Volume != int(p.volumePercent) {
+			p.SetVolume(uint8(music.Volume))
+		}
 		return
 	}
 	logger.Debug("PlayMusic", music, music.Volume)

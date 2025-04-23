@@ -23,6 +23,10 @@ func createParser() *DataParser {
 	}
 }
 
+func (p *DataParser) loadData(host string) {
+	p.inputData.Load(host)
+}
+
 func (p *DataParser) parseInput(conf *model.Config, hudMsgParser *model.DamageParser, player *model.Player) {
 	// fmt.Println("Data:", inputData)
 

@@ -297,13 +297,13 @@ func (l *inputLoop) getPid() (int, error) {
 func (l *inputLoop) checkHudMsg() {
 	logger.Debug("checkHudMsg")
 	l.hudMsgChecked = true
-	l.parser.inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
+	l.parser.inputData.LoadHudMsg(l.host)
 	lastDmg := l.parser.inputData.HudMsg.GetLastDmg()
 	if lastDmg == nil {
 		logger.Debug("not necessary")
 		return
 	}
-	state.lastDmg = uint64(lastDmg.ID)
+	l.parser.inputData.SetLastDmg(uint64(lastDmg.ID))
 	logger.Debug("set last id", lastDmg.ID)
-	l.parser.inputData.HudMsg.Load(l.host, state.lastEvt, state.lastDmg)
+	l.parser.inputData.LoadHudMsg(l.host)
 }

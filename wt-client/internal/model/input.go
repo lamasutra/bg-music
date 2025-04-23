@@ -127,6 +127,10 @@ func (w *WtData) SetLastEvt(lastEvt uint64) {
 	w.state.lastEvt = lastEvt
 }
 
+func (w *WtData) LoadHudMsg(host string) error {
+	return w.HudMsg.Load(host, w.state.lastDmg, w.state.lastEvt)
+}
+
 // GameRunning        =     false
 // MapLoaded           = false         bool
 
